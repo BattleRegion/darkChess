@@ -1,13 +1,13 @@
 module.exports = {
     debug : msg=> {
-        console.debug(`[debug] ${msg}`)
+        // console.log(`[debug] ${msg}`)
     },
 
     info : msg => {
-        console.info(`[info] ${msg}`)
+        console.log(`[info] ${msg}`)
     },
 
     error : msg =>{
-        console.error(`[error] ${msg}`)
+        console.log(`[error] ${msg}`)
     }
 };
