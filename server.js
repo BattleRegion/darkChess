@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const Log = require('./util/log');
+const BaseHandler = require('./app/handler/base');
 const port = 8888;
 const server_opts = {
     port: port
@@ -12,6 +13,8 @@ webSocketServer.on("connection", (ws, req)=>{
     Log.debug(`ws client ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} connected`);
     ws.on("message", data=>{
         Log.debug(`ws client receive msg ${data}`);
+        BaseHandler.parseReqPackage(data, ws);
+        ws.send(data);
     });
 
     ws.on("close", (code, reason)=>{
