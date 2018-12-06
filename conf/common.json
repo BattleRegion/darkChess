@@ -1,4 +1,6 @@
 {
     "server_port":8888,
-    "db_env":"local"
+    "db_env":"local",
+    "package_md5_key":"ead1e30473cd33ad4c2d6e634a2e94eae17460a7e725cb696f9e3b60e59ec66af05c0c893b8f9ac00ad13fd1ddcf58600e8fd5ccdff19da295336bbf684ecbe8",
+    "token_key":"23840e5ba50f3ea501f35c7cb5076126b98bab4cdc48c5d6801d3d05e26053f6ca4586ae3044a33a9c80f059a4181ee77dec2cc128f72f8f73669269bf49af43"
 }

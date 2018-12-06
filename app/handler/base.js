@@ -25,7 +25,13 @@ module.exports = {
     },
 
     sendToClient : (resPackage, ws)=>{
-        Log.info(`发送消息到客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 消息内容 : ${JSON.stringify(resPackage)}`);
-        ws.send(JSON.stringify(resPackage));
+        if(ws.readyState === WebSocket.OPEN) {
+            Log.info(`发送消息到客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 消息内容 : ${JSON.stringify(resPackage)}`);
+            ws.send(JSON.stringify(resPackage));
+        }
+        else{
+            Log.error(`连接不是打开状态无法发送消息`);
+            ServerManager.cleanWs(ws);
+        }
     },
 };

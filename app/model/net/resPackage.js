@@ -4,7 +4,6 @@ class ResPackage extends Package {
     constructor(opt){
         super(opt)
     }
-
 }
 
 module.exports = ResPackage;
