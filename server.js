@@ -6,27 +6,28 @@ const server_opts = {
     port: port
 };
 const webSocketServer = new WebSocket.Server(server_opts);
+global['Log'] = Log;
 
 Log.info(`server listen ${port}`);
 
 webSocketServer.on("connection", (ws, req)=>{
-    Log.debug(`ws client ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} connected`);
+    Log.info(`客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 连接成功`);
     ws.on("message", data=>{
         Log.debug(`ws client receive msg ${data}`);
         BaseHandler.parseReqPackage(data, ws);
     });
 
     ws.on("close", (code, reason)=>{
-        Log.debug(`ws client close code ${code} reason ${reason}`);
+        Log.info(`客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 断开 code ${code} reason ${reason}`);
     });
 
     ws.on("error", e=>{
-        Log.debug(`ws client error ${e}`);
+        Log.error(`ws client error ${e}`);
     });
 });
 
 webSocketServer.on("error", error=>{
-    Log.debug(`ws server error ${error}`);
+    Log.error(`ws server error ${error}`);
 });
 
 webSocketServer.on("close", ()=>{

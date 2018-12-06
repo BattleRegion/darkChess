@@ -1,12 +1,13 @@
 const ResPackage = require('../model/net/resPackage');
+const BaseHandler = require('./base');
 module.exports = {
-    dealReqPackage : (req_p,ws) =>{
+    t1:(req_p, ws) =>{
         let res_p = new ResPackage({
             event:req_p.event,
             rawData:{
                 reqRawData:req_p.rawData
             }
         });
-        ws.send(JSON.stringify(res_p));
+        BaseHandler.sendToClient(res_p, ws);
     }
 };
