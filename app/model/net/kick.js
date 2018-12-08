@@ -1,4 +1,4 @@
-const ResPackage = require('../net/resPackage');
+const ResPackage = require('./resPackage');
 
 class Kick extends ResPackage{
     constructor() {

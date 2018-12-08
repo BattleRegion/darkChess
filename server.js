@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const BaseHandler = require('./app/handler/base');
-const KickPackage = require('./app/model/game/kick');
+const KickPackage = require('./app/model/net/kick');
 
 module.exports = {
 
@@ -54,17 +54,17 @@ module.exports = {
     },
 
     bindUser : function(uid, ws){
-        Log.info(`绑定用户 ${uid} 到 ws`);
         if(this.getWsByUid(uid)){
             this.kickUser(uid);
         }
         this.userWs[uid] = ws;
+        Log.info(`绑定用户 ${uid} 到 ws 当前用户数量 ${Object.keys(this.userWs).length}`);
     },
 
     kickUser : function(uid){
         let ws = this.getWsByUid(uid);
         if(ws) {
-            Log.info(`踢用户 ${uid} 下线`);
+            Log.info(`用户 ${uid} 在其他地方登陆将其踢下线`);
             BaseHandler.sendToClient(new KickPackage(), ws);
             ws.close();
             delete this.userWs[uid];
@@ -77,7 +77,7 @@ module.exports = {
             let key = keys[i];
             let v = this.userWs[key];
             if(v === ws){
-                return v;
+                return key;
             }
         }
         return null;
@@ -92,7 +92,7 @@ module.exports = {
         if(uid){
             ws.close();
             delete this.userWs[uid];
-            Log.info(`清理用户${uid} 的 ws 链接`);
+            Log.info(`清理用户 ${uid} 的 ws 链接 剩余用户数量 ${Object.keys(this.userWs).length}`);
         }
     }
 };

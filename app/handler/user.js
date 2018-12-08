@@ -32,7 +32,7 @@ module.exports = {
 
     genToken: function(uid, callback){
         let token = CryptoUtil.toSecret(`${uid}_${new Date().getTime()}`,CommonConf['token_key']);
-        Executor.redisSet(DBEnv, RedisPrefix['USER_TOKEN'] + uid, token, (e)=>{
+        Executor.redisSet(DBEnv, RedisPrefix['USER_TOKEN'] + ":" + uid, token, (e)=>{
             callback(e, token);
         });
     }
