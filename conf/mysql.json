@@ -6,5 +6,13 @@
     "user"             : "root",
     "password"         : "q",
     "database"         : "black_chess"
+  },
+  "prod": {
+    "connectionLimit"  : 10,
+    "host"             : "rm-uf69bwy8qgjy29637.mysql.rds.aliyuncs.com",
+    "port"             : "3306",
+    "user"             : "lizi",
+    "password"         : "kBvLmtpTJiTxWXXTn8rUqgHW",
+    "database"         : "dark_chess"
   }
 }
