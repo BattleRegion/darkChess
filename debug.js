@@ -10,7 +10,14 @@ ws.on('message', function incoming(data) {
     console.log(`收到数据:${data}`);
     let obj = JSON.parse(data);
     if(obj.handler === "user" && obj.event === "debugLogin") {
-        matchPc(obj.rawData.token,ws);
+        this.token = obj.rawData.token;
+        checkInRoom(this.token,ws);
+        // matchPc(this.token,ws);
+    }
+    else if(obj.handler === "room" && obj.event === "info"){
+        if(obj.rawData.roomState === 1){
+            ready(this.token,obj.rawData.roomId,ws);
+        }
     }
 });
 
@@ -32,10 +39,33 @@ function debugLogin(uid,ws){
     send(param, ws);
 }
 
+function ready(token,roomId,ws){
+    let param = {
+        handler:'chess',
+        event:'ready',
+        rawData:{
+            token:token,
+            roomId:roomId
+        }
+    };
+    send(param,ws);
+}
+
 function match(token,ws){
     let param = {
         handler:'chess',
         event:'match',
+        rawData:{
+            token:token
+        }
+    };
+    send(param,ws);
+}
+
+function checkInRoom(token,ws){
+    let param = {
+        handler:'chess',
+        event:'checkInRoom',
         rawData:{
             token:token
         }

@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const BaseHandler = require('./app/handler/base');
 const KickPackage = require('./app/model/net/kick');
-
+const Chess = require('./app/handler/chess');
 module.exports = {
 
     curServer : null,
@@ -9,6 +9,9 @@ module.exports = {
     userWs : {},
 
     beginServer : function(port) {
+
+        //初始化内存需要的内容
+        Chess.initRooms();
 
         const server_opts = {
             port: port

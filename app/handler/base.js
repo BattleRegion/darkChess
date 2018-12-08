@@ -42,7 +42,7 @@ module.exports = {
     },
 
     sendToClient: function(resPackage, ws){
-        if(ws.readyState === WebSocket.OPEN) {
+        if(ws && ws.readyState === WebSocket.OPEN) {
             Log.info(`发送消息到客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 消息内容 : ${JSON.stringify(resPackage)}`);
             ws.send(JSON.stringify(resPackage));
         }
@@ -84,5 +84,9 @@ module.exports = {
             Log.info(`${apiStr} 不需要验证`);
             cb(true);
         }
+    },
+
+    errorSend: function(event, msg, ws){
+        BaseHandler.sendToClient(new ErrorPackage(event, msg), ws);
     }
 };
