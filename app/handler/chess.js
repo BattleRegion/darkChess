@@ -11,27 +11,6 @@ module.exports = {
 
     rooms:{},
 
-    //从数据库初始化当前房间
-    initCurRooms: function(callback){
-        Log.info(`begin initCurRooms from db!!!`);
-        let sql = new Command('select * from room where state !=3 and state != 4',[]);
-        Executor.query(DBEnv, sql ,(e,r)=>{
-            if(e){
-                callback(e)
-            }
-            else{
-                for(let i = 0;i<r.length;i++){
-                    let info = r[i];
-                    let roomId = info.id;
-                    let room = new Room("","","",true);
-                    room.setDBInfo(info);
-                    this.rooms[roomId] = room;
-                }
-                callback(null);
-            }
-        })
-    },
-
     //匹配玩家
     match: function(req_p, ws){
         let uid = req_p.rawData.uid;
@@ -74,17 +53,6 @@ module.exports = {
         }
     },
 
-    //清理用户匹配状态
-    cleanUserMatch: function(uid){
-        for(let i = this.matchingUsers.length - 1;i>=0;i--){
-            if(this.matchingUsers[i] === uid){
-                this.matchingUsers.splice(i, 1);
-                Log.info(`尝试取消用户${uid}匹配状态，剩余匹配列表${JSON.stringify(this.matchingUsers)}`);
-                break;
-            }
-        }
-    },
-
     //退出房间
     quitRoom: function(req_p, ws) {
         let uid = req_p.rawData.uid;
@@ -123,6 +91,96 @@ module.exports = {
         else{
             Log.error(`quit room no room ${roomId}`);
             BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
+        }
+    },
+
+    //用户ready
+    ready: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        Log.info(`用户准备！${uid} roomId:${roomId}`);
+        let room = this.roomActionLegal(uid,roomId);
+        if(room){
+            let p = room.getPlayer(uid);
+            p.hasReady = true;
+            room.tryBeginGame();
+            BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
+        }
+        else{
+            Log.error(`user ${uid} ready ${roomId} not legal`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
+    },
+
+    //翻子
+    flip: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let pId = req_p.rawData['pId'];
+        let room = this.roomActionLegal(uid,roomId);
+        if(room && room.roomState === ROOM_STATE.ING){
+            let p = room.flipPiece(pId,uid);
+            if(p){
+                Log.info(`翻子成功:${JSON.stringify(p)}`);
+                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p},ws);
+            }
+            else{
+                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`},ws);
+            }
+        }
+        else{
+            Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
+    },
+
+    //走子
+    move: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let pId = req_p.rawData['pId'];
+        let room = this.roomActionLegal(uid,roomId);
+        if(room && room.roomState === ROOM_STATE.ING){
+
+        }
+        else{
+            Log.error(`room ${roomId} user ${uid} move ${pId} not legal`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
+    },
+
+
+    // ------------分割线----------
+
+    //从数据库初始化当前房间
+    initCurRooms: function(callback){
+        Log.info(`begin initCurRooms from db!!!`);
+        let sql = new Command('select * from room where state !=3 and state != 4',[]);
+        Executor.query(DBEnv, sql ,(e,r)=>{
+            if(e){
+                callback(e)
+            }
+            else{
+                for(let i = 0;i<r.length;i++){
+                    let info = r[i];
+                    let roomId = info.id;
+                    let room = new Room("","","",true);
+                    room.setDBInfo(info);
+                    this.rooms[roomId] = room;
+                }
+                callback(null);
+            }
+        })
+    },
+
+    //清理用户匹配状态
+    cleanUserMatch: function(uid){
+        for(let i = this.matchingUsers.length - 1;i>=0;i--){
+            if(this.matchingUsers[i] === uid){
+                this.matchingUsers.splice(i, 1);
+                Log.info(`尝试取消用户${uid}匹配状态，剩余匹配列表${JSON.stringify(this.matchingUsers)}`);
+                break;
+            }
         }
     },
 
@@ -180,49 +238,4 @@ module.exports = {
         }
         return null;
     },
-
-    //用户ready
-    ready: function(req_p, ws){
-        let uid = req_p.rawData.uid;
-        let roomId = req_p.rawData.roomId;
-        Log.info(`用户准备！${uid} roomId:${roomId}`);
-        let room = this.roomActionLegal(uid,roomId);
-        if(room){
-            let p = room.getPlayer(uid);
-            p.hasReady = true;
-            room.tryBeginGame();
-            BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
-        }
-        else{
-            Log.error(`user ${uid} ready ${roomId} not legal`);
-            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
-        }
-    },
-
-    //翻子
-    flip: function(req_p, ws){
-        let uid = req_p.rawData.uid;
-        let roomId = req_p.rawData.roomId;
-        let pId = req_p.rawData['pId'];
-        let room = this.roomActionLegal(uid,roomId);
-        if(room && room.roomState === ROOM_STATE.ING){
-            let p = room.flipPiece(pId,uid);
-            if(p){
-                Log.info(`翻子成功:${JSON.stringify(p)}`)
-                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p},ws);
-            }
-            else{
-                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`},ws);
-            }
-        }
-        else{
-            Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
-            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
-        }
-    },
-
-    //走子
-    move: function(req_p, ws){
-
-    }
 };
