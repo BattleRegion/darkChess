@@ -1,3 +1,4 @@
+const PTYPE = require('./pType');
 class Piece  {
 
     constructor(id, side, type, index, hp){
@@ -18,6 +19,27 @@ class Piece  {
             this.x = x;
             this.y = y;
         }
+    }
+
+
+    canMove(x,y,board){
+        Log.info(`棋子 ${this.name} 尝试移动 x:${x} y:${y}`);
+        if(board.inBoardRange(x,y)){
+            let px = this.x;
+            let py = this.y;
+            if(this.type !== PTYPE.CANNON){
+                let crossPos = board.getCross(px,py);
+                let moveToStr = `${x}_${y}`;
+                Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的十字位置 ${JSON.stringify(crossPos)}`);
+                if(crossPos.includes(moveToStr)){
+                    return true;
+                }
+            }
+            else{
+
+            }
+        }
+        return false
     }
 
     info(){
@@ -52,6 +74,10 @@ class Piece  {
             return basicInfo;
         }
         return null
+    }
+
+    atk(piece){
+
     }
 }
 

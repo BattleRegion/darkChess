@@ -7,6 +7,7 @@ const ResPackage = require('../net/resPackage');
 const DataAccess = require('dataAccess');
 const Executor = DataAccess.executor;
 const Command = DataAccess.command;
+const MOVE_ACTION = require('./moveAction');
 class Room {
 
     constructor(p1, p2, pc, delaySet){
@@ -143,8 +144,7 @@ class Room {
             let piece = this.board.findPiece(pId);
             if(piece){
                 if(player.side !== Side.UNDEFINED && player.side !== piece.side){
-                    Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side}`);
-                    return null;
+                    Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side} ${this.roomId}`);
                 }
                 else{
                     if(player.side === Side.UNDEFINED){
@@ -161,6 +161,25 @@ class Room {
                     this.updateRoomInfoToDB();
                     return piece.clientInfo()
                 }
+            }
+        }
+        return null;
+    }
+
+    movePiece(pId,uid,x,y){
+        let player = this.getPlayer(uid);
+        if(this.canTurn(player)){
+            let piece = this.board.findPiece(pId);
+            if(piece && piece.side === player.side && piece.hasFlip){
+                if(piece.canMove(x,y,this.board)){
+
+                }
+                else{
+                    Log.error(`棋子移动非法 ${JSON.stringify(piece)} ${x} ${y}`);
+                }
+            }
+            else{
+                Log.error(`尝试翻一个不属于自己的颜色 ${player.side} ${piece.side} roomId ${this.roomId} hasFlip ${piece.hasFlip}`)
             }
         }
         return null;

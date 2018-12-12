@@ -19,7 +19,7 @@ ws.on('message', function incoming(data) {
     }
     if(obj.handler === "chess" && obj.event === "roomInfo") {
         // ready(this.token,1,ws)
-        flip(this.token,1,1,ws);
+        move(this.token,1,1,0,4,ws);
     }
 });
 
@@ -39,6 +39,21 @@ function debugLogin(uid,ws){
         }
     };
     send(param, ws);
+}
+
+function move(token,roomId,pieceId,x,y,ws){
+    let p = {
+        handler:'chess',
+        event:'move',
+        rawData: {
+            token:token,
+            roomId:roomId,
+            pId:pieceId,
+            x:x,
+            y:y
+        }
+    };
+    send(p, ws)
 }
 
 function flip(token,roomId,pieceId,ws){
