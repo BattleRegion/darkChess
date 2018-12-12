@@ -145,6 +145,9 @@ class Room {
             if(piece){
                 if(player.side !== Side.UNDEFINED && player.side !== piece.side){
                     Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side} ${this.roomId}`);
+                    return {
+                        code : GameCode.FLIP_NOT_YOUR_SIDE
+                    }
                 }
                 else{
                     if(player.side === Side.UNDEFINED){
@@ -159,11 +162,23 @@ class Room {
                     }
                     piece.hasFlip = true;
                     this.updateRoomInfoToDB();
-                    return piece.clientInfo()
+                    return {
+                        code:GameCode.SUCCESS,
+                        piece:piece.clientInfo()
+                    }
+                }
+            }
+            else{
+                return {
+                    code : GameCode.PIECE_NOT_FIND
                 }
             }
         }
-        return null;
+        else{
+            return {
+                code : GameCode.NOT_YOUR_TURN
+            }
+        }
     }
 
     movePiece(pId,uid,x,y){

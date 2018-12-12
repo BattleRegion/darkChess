@@ -119,14 +119,8 @@ module.exports = {
         let pId = req_p.rawData['pId'];
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
-            let p = room.flipPiece(pId,uid);
-            if(p){
-                Log.info(`翻子成功:${JSON.stringify(p)}`);
-                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p},ws);
-            }
-            else{
-                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`},ws);
-            }
+            let result = room.flipPiece(pId,uid);
+            BaseHandler.commonResponse(req_p,result,ws);
         }
         else{
             Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
