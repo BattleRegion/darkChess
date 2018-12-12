@@ -170,5 +170,33 @@ module.exports = {
             }
         }
         return null;
+    },
+
+    //判断操作房间是否合法
+    roomActionLegal:function(roomId, uid){
+        let r = this.rooms[roomId];
+        if(r && r.hasPlayer(uid)){
+            return r;
+        }
+        return null;
+    },
+
+    //用户ready
+    ready: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let room = this.roomActionLegal(uid,roomId);
+        if(room){
+            Log.info(`用户准备！${uid}`);
+            let p = room.getPlayer(uid);
+            p.hasReady = true;
+            room.tryBeginGame();
+            BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
+        }
+        else{
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
     }
+
+
 };

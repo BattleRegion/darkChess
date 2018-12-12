@@ -14,8 +14,11 @@ ws.on('message', function incoming(data) {
         match(this.token,ws);
 
         setTimeout(()=>{
-            cancel(this.token,false, ws);
+            cancel(this.token,true, ws);
         },5000);
+    }
+    if(obj.handler === "chess" && obj.event === "roomInfo") {
+
     }
 });
 

@@ -90,6 +90,17 @@ class Room {
         }
         return this.p2;
     }
+
+    getPlayer(uid){
+        if(this.p1.uid === uid){
+            return this.p1;
+        }
+        return this.p2;
+    }
+
+    tryBeginGame(){
+
+    }
 }
 
 module.exports = Room;
