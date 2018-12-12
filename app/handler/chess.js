@@ -151,7 +151,6 @@ module.exports = {
             })
         }
         else {
-            console.log(exist_room);
             Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${JSON.stringify(exist_room)}`);
             //todo 通知用户房间信息
             exist_room.broadcast();
@@ -174,8 +173,8 @@ module.exports = {
     },
 
     //判断操作房间是否合法
-    roomActionLegal:function(roomId, uid){
-        let r = this.rooms[roomId];
+    roomActionLegal:function(uid, roomId){
+        let r = this.rooms[roomId.toString()];
         if(r && r.hasPlayer(uid)){
             return r;
         }
@@ -186,9 +185,9 @@ module.exports = {
     ready: function(req_p, ws){
         let uid = req_p.rawData.uid;
         let roomId = req_p.rawData.roomId;
+        Log.info(`用户准备！${uid} roomId:${roomId}`);
         let room = this.roomActionLegal(uid,roomId);
         if(room){
-            Log.info(`用户准备！${uid}`);
             let p = room.getPlayer(uid);
             p.hasReady = true;
             room.tryBeginGame();
@@ -206,17 +205,18 @@ module.exports = {
         let roomId = req_p.rawData.roomId;
         let pId = req_p.rawData['pId'];
         let room = this.roomActionLegal(uid,roomId);
-        if(room && room.state === ROOM_STATE.ING){
-            let p = room.flipPiece(pId);
+        if(room && room.roomState === ROOM_STATE.ING){
+            let p = room.flipPiece(pId,uid);
             if(p){
-                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p});
+                Log.info(`翻子成功:${JSON.stringify(p)}`)
+                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p},ws);
             }
             else{
-                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`});
+                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`},ws);
             }
         }
         else{
-            Log.error(`room ${roomId} user ${uid} flip not legal`);
+            Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },

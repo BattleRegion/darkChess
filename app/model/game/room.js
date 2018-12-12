@@ -70,8 +70,11 @@ class Room {
         }
     }
 
-    updateRoomInfoToDB(cb){
+    updateRoomInfoToDB(cb,state){
         let sql = new Command('update room set info = ? where id = ?',[JSON.stringify(this.roomInfo(false)), this.roomId]);
+        if(state){
+            sql = new Command('update room set info = ?,state = ? where id = ?',[JSON.stringify(this.roomInfo(false)),state, this.roomId]);
+        }
         Executor.query(DBEnv, sql, (e)=>{
             if(e){
                 Log.error(`updateRoomInfoToDB error :${e.toString()}`);
@@ -103,16 +106,62 @@ class Room {
 
     tryBeginGame(){
         if(this.p1.hasReady && this.p2.hasReady) {
-
+            this.roomState = ROOM_STATE.ING;
+            this.turnUser();
+            this.updateRoomInfoToDB(null,this.roomState);
+        }
+        else{
+            this.updateRoomInfoToDB();
         }
     }
 
-    flipPiece(pId){
-        let p = this.board.findPiece(pId);
-        if(p){
-            p.hasFlip = true;
-            this.updateRoomInfoToDB();
-            return p.clientInfo()
+    turnUser(){
+        if(this.curTurn===0){
+            this.p1.turn(true);
+            this.p2.turn(false);
+        }
+        else{
+            this.p1.turn(false);
+            this.p2.turn(true);
+        }
+    }
+
+    canTurn(player){
+        if(player === this.p1 && this.curTurn === 0){
+            return true;
+        }
+        if(player === this.p2 && this.curTurn === 1){
+            return true;
+        }
+        Log.error(`当前并不是${player.uid}的回合，不能行动！`);
+        return false;
+    }
+
+    flipPiece(pId,uid){
+        let player = this.getPlayer(uid);
+        if(this.canTurn(player)){
+            let piece = this.board.findPiece(pId);
+            if(piece){
+                if(player.side !== Side.UNDEFINED && player.side !== piece.side){
+                    Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side}`);
+                    return null;
+                }
+                else{
+                    if(player.side === Side.UNDEFINED){
+                        player.side = piece.side;
+                        let otherPlayer = this.getOtherPlayer(uid);
+                        if(player.side === Side.BLACK){
+                            otherPlayer.side = Side.RED;
+                        }
+                        else{
+                            otherPlayer.side = Side.BLACK;
+                        }
+                    }
+                    piece.hasFlip = true;
+                    this.updateRoomInfoToDB();
+                    return piece.clientInfo()
+                }
+            }
         }
         return null;
     }

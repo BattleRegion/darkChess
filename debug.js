@@ -18,7 +18,8 @@ ws.on('message', function incoming(data) {
         },1000);
     }
     if(obj.handler === "chess" && obj.event === "roomInfo") {
-
+        // ready(this.token,1,ws)
+        flip(this.token,1,1,ws);
     }
 });
 
@@ -38,6 +39,31 @@ function debugLogin(uid,ws){
         }
     };
     send(param, ws);
+}
+
+function flip(token,roomId,pieceId,ws){
+    let p = {
+        handler:'chess',
+        event:'flip',
+        rawData: {
+            token:token,
+            roomId:roomId,
+            pId:pieceId
+        }
+    };
+    send(p, ws)
+}
+
+function ready(token,roomId,ws) {
+    let p = {
+        handler:'chess',
+        event:'ready',
+        rawData: {
+            token:token,
+            roomId:roomId
+        }
+    };
+    send(p, ws)
 }
 
 function match(token, ws){

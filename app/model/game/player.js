@@ -1,5 +1,6 @@
 const Side = require('./side');
 const PLAYER_TYPE = require('./playerType');
+const ResPackage = require('../../model/net/resPackage');
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -16,6 +17,24 @@ class Player {
             hasReady:this.hasReady,
             side:this.side,
             curHp:this.curHp
+        }
+    }
+
+    turn(go){
+        if(this.type === PLAYER_TYPE.USER){
+            let res_p = new ResPackage({
+                handler:"chess",
+                event:"turn",
+                rawData:{
+                    lock:!go
+                }
+            });
+            BaseHandler.sendToClient(res_p,this.getWs());
+        }
+        else{
+            if(go){
+                Log.info(`PC ${this.uid} AI行动`)
+            }
         }
     }
 

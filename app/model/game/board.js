@@ -119,7 +119,7 @@ class Board {
     findPiece(pId){
         for(let i = 0;i<this.blocks.length;i++){
             let b = this.blocks[i];
-            if(b.piece&&b.piece.id === pId){
+            if(b.piece&&b.piece.id === pId&&b.piece.hasDead === false){
                 return b.piece
             }
         }
