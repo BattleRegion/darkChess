@@ -61,7 +61,7 @@ class Board {
                 p.hasDead = b.piece.hasDead;
                 block.piece = p;
             }
-            this.blocks.push(b);
+            this.blocks.push(block);
         }
     }
 
