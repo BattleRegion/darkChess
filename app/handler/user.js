@@ -5,7 +5,7 @@ const CryptoUtil = require('../../util/cryptoUtil');
 module.exports = {
     debugLogin: function(req_p, ws) {
         let rawData = req_p.rawData;
-        let uid = rawData['uid'];
+        let uid = rawData['uid'].toString();
         if(uid) {
             this.genToken(uid, (e,token) => {
                 if(!e) {

@@ -10,9 +10,6 @@ module.exports = {
 
     beginServer : function(port) {
 
-        //初始化内存需要的内容
-        Chess.initRooms();
-
         const server_opts = {
             port: port
         };
@@ -93,6 +90,7 @@ module.exports = {
     cleanWs: function(ws){
         let uid = this.getUidByWs(ws);
         if(uid){
+            Chess.cleanUserMatch(uid);
             ws.close();
             delete this.userWs[uid];
             Log.info(`清理用户 ${uid} 的 ws 链接 剩余用户数量 ${Object.keys(this.userWs).length}`);

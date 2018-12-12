@@ -6,13 +6,6 @@ class block  {
         this.y = y;
         this.piece = null;
     }
-
-    getPInfo(){
-        if(this.piece){
-            return this.piece.getCurInfo()
-        }
-        return null;
-    }
 }
 
 module.exports = block;

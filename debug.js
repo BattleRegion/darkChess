@@ -11,13 +11,11 @@ ws.on('message', function incoming(data) {
     let obj = JSON.parse(data);
     if(obj.handler === "user" && obj.event === "debugLogin") {
         this.token = obj.rawData.token;
-        checkInRoom(this.token,ws);
-        // matchPc(this.token,ws);
-    }
-    else if(obj.handler === "room" && obj.event === "info"){
-        if(obj.rawData.roomState === 1){
-            ready(this.token,obj.rawData.roomId,ws);
-        }
+        match(this.token,ws);
+
+        setTimeout(()=>{
+            cancel(this.token,false, ws);
+        },5000);
     }
 });
 
@@ -39,49 +37,39 @@ function debugLogin(uid,ws){
     send(param, ws);
 }
 
-function ready(token,roomId,ws){
-    let param = {
+function match(token, ws){
+    let p = {
         handler:'chess',
-        event:'ready',
-        rawData:{
+        event:'match',
+        rawData: {
+            token:token
+        }
+    };
+    send(p, ws)
+}
+
+function cancel(token,needPC, ws){
+    let p = {
+        handler:'chess',
+        event:'cancelMatch',
+        rawData: {
+            token:token,
+            needPC:needPC
+        }
+    };
+    send(p, ws)
+}
+
+function forceQuit(token,roomId,ws){
+    let p = {
+        handler:'chess',
+        event:'quitRoom',
+        rawData: {
             token:token,
             roomId:roomId
         }
     };
-    send(param,ws);
-}
-
-function match(token,ws){
-    let param = {
-        handler:'chess',
-        event:'match',
-        rawData:{
-            token:token
-        }
-    };
-    send(param,ws);
-}
-
-function checkInRoom(token,ws){
-    let param = {
-        handler:'chess',
-        event:'checkInRoom',
-        rawData:{
-            token:token
-        }
-    };
-    send(param,ws);
-}
-
-function matchPc(token,ws){
-    let param = {
-        handler:'chess',
-        event:'matchPc',
-        rawData:{
-            token:token
-        }
-    };
-    send(param,ws);
+    send(p, ws)
 }
 
 function send(param, ws){

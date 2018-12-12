@@ -6,6 +6,7 @@ const filterVerify = {
     "user_debugLogin":true
 };
 module.exports = {
+
     parseReqPackage: function(data, ws) {
         let req_p = new RequestPackage(data);
         if(req_p['legal']){
@@ -18,7 +19,7 @@ module.exports = {
                         let handler = require(`../../app/handler/${handlerName}`);
                         if(handler[event]){
                             if(result !== true){
-                                req_p.rawData.uid = result;
+                                req_p.rawData.uid = result.toString();
                             }
                             Log.info(`尝试处理数据包 ${handlerName} ${event} ${JSON.stringify(req_p.rawData)}`);
                             handler[event](req_p, ws);
@@ -88,5 +89,14 @@ module.exports = {
 
     errorSend: function(event, msg, ws){
         BaseHandler.sendToClient(new ErrorPackage(event, msg), ws);
+    },
+
+    commonResponse: function(req_p, rawData ,ws){
+        let res_p = new ResPackage({
+            handler:req_p.handler,
+            event:req_p.event,
+            rawData:rawData
+        });
+        BaseHandler.sendToClient(res_p, ws);
     }
 };

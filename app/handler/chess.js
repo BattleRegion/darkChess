@@ -1,123 +1,174 @@
 const Room = require('../model/game/room');
+const ResPackage = require('../model/net/resPackage');
 const DataAccess = require('dataAccess');
+const ROOM_STATE = require('../model/game/roomState');
+const PLAYER_TYPE = require('../model/game/playerType');
 const Executor = DataAccess.executor;
 const Command = DataAccess.command;
-const ROOM_STATE = require('../model/game/roomState');
-const ResPackage = require('../model/net/resPackage');
 module.exports = {
+
+    matchingUsers:[],
 
     rooms:{},
 
-    initRooms:function(cb){
-        let sql = new Command('select * from room where state != ?',[ROOM_STATE.END]);
-        Executor.query(DBEnv, sql, (e,r)=>{
-
+    //从数据库初始化当前房间
+    initCurRooms: function(callback){
+        Log.info(`begin initCurRooms from db!!!`);
+        let sql = new Command('select * from room where state !=3 and state != 4',[]);
+        Executor.query(DBEnv, sql ,(e,r)=>{
+            if(e){
+                callback(e)
+            }
+            else{
+                for(let i = 0;i<r.length;i++){
+                    let info = r[i];
+                    let roomId = info.id;
+                    let room = new Room("","","",true);
+                    room.setDBInfo(info);
+                    this.rooms[roomId] = room;
+                }
+                callback(null);
+            }
         })
     },
 
-    checkInRoom: function(req_p, ws){
+    //匹配玩家
+    match: function(req_p, ws){
         let uid = req_p.rawData.uid;
-        Log.info(`查询用户:${uid} 是否有存在的棋局`);
-        this.hasPlaying(uid, (e,r)=>{
-            if(!e){
-                let info = null;
-                if(r.length > 0){
-                    let roomId = r[0].id;
-                    let room = this.rooms[roomId];
-                    if(room){
-                        info = room.getClientInfo();
+        if(!this.matchingUsers.includes(uid)){
+            if(this.matchingUsers.length > 0){
+                let oppUid = this.matchingUsers[0];
+                this.matchingUsers.slice(0,1);
+                Log.info(`用户 ${uid} 匹配到 用户 ${oppUid} 准备创建房间！当前剩余匹配列表 :${JSON.stringify(this.matchingUsers)}`);
+                this.createRoom(uid, oppUid, false)
+            }
+            else{
+                this.matchingUsers.push(uid);
+                Log.info(`用户 ${uid} 加入匹配列表中. 当前剩余匹配列表 :${JSON.stringify(this.matchingUsers)} 等待其他用户匹配..`);
+                BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS}, ws);
+            }
+        }
+        else{
+            Log.error(`用户${uid}已经在匹配列表中..请不要重复调用！`);
+            BaseHandler.commonResponse(req_p, {code: GameCode.USER_IN_MATCH, msg: '用户已经在匹配列表中'}, ws);
+        }
+    },
+
+    //取消匹配
+    cancelMatch: function(req_p, ws) {
+        let uid = req_p.rawData.uid;
+        let needPC = req_p.rawData['needPC'];
+        if(this.matchingUsers.includes(uid)){
+            this.cleanUserMatch(uid);
+            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS}, ws);
+        }
+        else{
+            Log.error(`当前用户不在匹配列表中不需要取消，剩余匹配列表${JSON.stringify(this.matchingUsers)}`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.CANCEL_MATCH_ERROR, msg:'用户不在匹配列表中无法取消'}, ws);
+        }
+
+        if(needPC){
+            let pc_uid = `PC_${new Date().getTime()}`;
+            Log.info(`用户:${uid} 尝试匹配 一个PC 对手 ${pc_uid}`);
+            this.createRoom(uid, pc_uid, true)
+        }
+    },
+
+    //清理用户匹配状态
+    cleanUserMatch: function(uid){
+        for(let i = this.matchingUsers.length - 1;i>=0;i--){
+            if(this.matchingUsers[i] === uid){
+                this.matchingUsers.splice(i, 1);
+                Log.info(`尝试取消用户${uid}匹配状态，剩余匹配列表${JSON.stringify(this.matchingUsers)}`);
+                break;
+            }
+        }
+    },
+
+    //退出房间
+    quitRoom: function(req_p, ws) {
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let room = this.rooms[roomId];
+        Log.info(`用户 ${uid} 尝试退出房间 ${roomId}`);
+        if(room){
+            if(room.hasPlayer(uid)){
+                //lose
+                let sql = new Command('update room set state = ? where id = ?',[ROOM_STATE.FORCE_END,roomId]);
+                Executor.query(DBEnv, sql ,(e)=>{
+                    if(!e){
+                        //通知另一个玩家
+                        let res_p = new ResPackage({
+                            handler:'chess',
+                            event:'userForceQuit'
+                        });
+                        let otherPlayer = room.getOtherPlayer(uid);
+                        if(otherPlayer.type === PLAYER_TYPE.USER){
+                            BaseHandler.sendToClient(res_p,room.getOtherPlayer(uid).getWs());
+                        }
+                        BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
+                        delete this.rooms[roomId];
+                        Log.info(`用户 ${uid} 退出房间 ${roomId} 成功`)
                     }
                     else{
-                        Log.error(`数据库中存在 room ${roomId} 但是内存中不存在！`);
+                        Log.error(`quit room db error ${e.toString()}`);
                     }
-                }
-                let res_p = new ResPackage({
-                    handler:req_p.handler,
-                    event:req_p.event,
-                    rawData:{
-                        info:info
-                    }
-                });
-                BaseHandler.sendToClient(res_p, ws);
+                })
             }
             else{
-                Log.error(`${uid} checkInRoom error ${e.toString()}`);
-                BaseHandler.errorSend("checkInRoom", "db error!", ws);
+                Log.error(`quit room ${roomId} no user ${uid}`);
+                BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
             }
-        })
+        }
+        else{
+            Log.error(`quit room no room ${roomId}`);
+            BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
+        }
     },
 
-    matchPc: function(req_p, ws){
-        let uid = req_p.rawData.uid;
-        let pc_uid = `PC_${new Date().getTime()}`;
-        Log.info(`用户:${uid} 尝试匹配 一个PC 对手 ${pc_uid}`);
-        this.hasPlaying(uid, (e,r)=>{
-            if(!e){
-                if(r.length === 0){
-                    let sql = new Command('insert into room(p1_uid,p2_uid,createAt) values(?,?,?)',[uid, pc_uid, ~~(new Date().getTime()/1000)]);
-                    Executor.query(DBEnv, sql, (e,r)=>{
-                        if(!e){
-                            let roomId = r['insertId'];
-                            let room = new Room(roomId, uid, pc_uid, true);
-                            room.updateDBInfo((e)=>{
-                                if(!e){
-                                    this.rooms[roomId] = room;
-                                    room.broadcastRoomInfo();
-                                }
-                                else{
-                                    Log.error(`matchPc error : ${e.toString()}`);
-                                }
-                            })
-                        }
-                        else{
-                            Log.error(`matchPc error : ${e.toString()}`);
-                        }
-                    })
+    //创建对局房间
+    createRoom: function(p1_uid, p2_uid, pc){
+        let exist_room = this.isInRoom(p1_uid);
+        if(!exist_room){
+            let room = new Room(p1_uid, p2_uid, pc);
+            let info = room.roomInfo(false);
+            let sql = new Command('insert into room(p1_uid,p2_uid,pc,state,info,createAt) values(?,?,?,?,?,?)',[info.p1.uid, info.p2.uid
+                ,info.pc,info.state,
+                JSON.stringify(info),
+                ~~(new Date().getTime()/1000)]);
+            Executor.query(DBEnv, sql, (e,r)=>{
+                if(!e){
+                    let roomId = r['insertId'];
+                    room.roomId = roomId;
+                    this.rooms[roomId] = room;
+                    room.updateRoomInfoToDB();
+                    Log.info(`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
+                    room.broadcast();
                 }
                 else{
-                    Log.error(`${uid} matchPc error : user has in room`);
-                    BaseHandler.errorSend("matchPc", "user has in room", ws);
+                    Log.error(`create room db error : ${e.toString()}`);
+                }
+            })
+        }
+        else {
+            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${JSON.stringify(exist_room)}`)
+            //todo 通知用户房间信息
+            exist_room.broadcast();
+        }
+    },
+
+    //判断是否在房间中
+    isInRoom: function(uid){
+        let keys = Object.keys(this.rooms);
+        for(let i = 0;i<keys.length;i++){
+            let k = keys[i];
+            let r = this.rooms[k];
+            if(r){
+                if(r.hasPlayer(uid)){
+                    return r;
                 }
             }
-            else{
-                Log.error(`matchPc error : ${e.toString()}`);
-            }
-        })
-    },
-
-    ready: function(req_p, ws){
-        let uid = req_p.rawData.uid;
-        let roomId = req_p.rawData.roomId;
-        let r = this.rooms[roomId];
-        if(r){
-            r.userReady(uid);
         }
-        else{
-            Log.error(`${uid} ready error, room not exist`);
-            BaseHandler.errorSend("ready","room not exist", ws);
-        }
-    },
-
-    flip: function(req_p, ws){
-        let uid = req_p.uid;
-        let roomId = req_p.rawData.roomId;
-        let pieceId = req_p['pieceId'];
-        let r = this.rooms[roomId];
-        if(r){
-            r.flip(uid, pieceId);
-        }
-        else{
-            Log.error(`${uid} ready error, room not exist`);
-            BaseHandler.errorSend("ready","room not exist", ws);
-        }
-    },
-
-    move: function(req_p, ws){
-
-    },
-
-    hasPlaying: function(uid, cb){
-        let sql = new Command('select id,info from room where p1_uid = ? or p2_uid = ? and state != 3',[uid,uid]);
-        Executor.query(DBEnv, sql ,cb)
+        return null;
     }
 };

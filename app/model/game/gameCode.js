@@ -1,0 +1,6 @@
+module.exports = {
+    SUCCESS:200,
+    CANCEL_MATCH_ERROR:10001,
+    USER_IN_MATCH:10002,
+    ROOM_NOT_EXIST:10003
+};
