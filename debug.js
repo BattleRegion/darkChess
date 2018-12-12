@@ -15,7 +15,7 @@ ws.on('message', function incoming(data) {
 
         setTimeout(()=>{
             cancel(this.token,true, ws);
-        },5000);
+        },1000);
     }
     if(obj.handler === "chess" && obj.event === "roomInfo") {
 

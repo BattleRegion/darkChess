@@ -151,7 +151,8 @@ module.exports = {
             })
         }
         else {
-            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${JSON.stringify(exist_room)}`)
+            console.log(exist_room);
+            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${JSON.stringify(exist_room)}`);
             //todo 通知用户房间信息
             exist_room.broadcast();
         }
@@ -194,9 +195,34 @@ module.exports = {
             BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
         }
         else{
+            Log.error(`user ${uid} ready ${roomId} not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
+    },
+
+    //翻子
+    flip: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let pId = req_p.rawData['pId'];
+        let room = this.roomActionLegal(uid,roomId);
+        if(room && room.state === ROOM_STATE.ING){
+            let p = room.flipPiece(pId);
+            if(p){
+                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,piece:p});
+            }
+            else{
+                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`翻棋发生错误！`});
+            }
+        }
+        else{
+            Log.error(`room ${roomId} user ${uid} flip not legal`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
+    },
+
+    //走子
+    move: function(req_p, ws){
+
     }
-
-
 };

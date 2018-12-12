@@ -99,21 +99,31 @@ class Board {
 
     initPiecesPool(){
         let pool = [];
-        let ii = 0;
-        Object.keys(SIDE).forEach(function(side){
+        let ii = 1;
+        for(let side = 1;side<3;side++){
             Object.keys(PTYPE).forEach(function(type){
                 let pConf = INIT_CONF.piecesConf[PTYPE[type]];
                 let count = pConf['count'];
                 let hp = pConf['hp'];
                 for(let i = 0;i<count;i++){
                     let index = i + 1;
-                    let p = new Piece(ii,SIDE[side],PTYPE[type],index, hp);
+                    let p = new Piece(ii,side,PTYPE[type],index, hp);
                     pool.push(p);
                     ii ++;
                 }
             });
-        });
+        }
         return pool;
+    }
+
+    findPiece(pId){
+        for(let i = 0;i<this.blocks.length;i++){
+            let b = this.blocks[i];
+            if(b.piece&&b.piece.id === pId){
+                return b.piece
+            }
+        }
+        return null;
     }
 }
 

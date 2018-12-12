@@ -17,16 +17,18 @@ class Room {
             this.p1 = new Player(p1, PLAYER_TYPE.USER);
             this.p2 = new Player(p2, this.pc?PLAYER_TYPE.PC:PLAYER_TYPE.USER);
             this.board = new Board();
+            this.curTurn = 0;
         }
     }
 
     setDBInfo(info){
         let infoObj = info;
         let boardInfo = JSON.parse(infoObj.info);
-        // console.log(boardInfo);
         this.roomId = infoObj.id;
         this.roomState = infoObj.state;
-        this.pc = infoObj.pc === 1 ;
+        this.pc = infoObj.pc === 1;
+
+        this.curTurn = boardInfo.curTurn?boardInfo.curTurn:0;
 
         this.p1 = new Player(infoObj['p1_uid'], PLAYER_TYPE.USER);
         this.p1.hasReady = boardInfo.p1.hasReady;
@@ -49,6 +51,7 @@ class Room {
             p1:this.p1.playerInfo(),
             p2:this.p2.playerInfo(),
             pc:this.pc,
+            curTurn:this.curTurn,
             state:this.roomState,
             board:this.board.boardInfo(client)
         }
@@ -99,7 +102,19 @@ class Room {
     }
 
     tryBeginGame(){
+        if(this.p1.hasReady && this.p2.hasReady) {
 
+        }
+    }
+
+    flipPiece(pId){
+        let p = this.board.findPiece(pId);
+        if(p){
+            p.hasFlip = true;
+            this.updateRoomInfoToDB();
+            return p.clientInfo()
+        }
+        return null;
     }
 }
 
