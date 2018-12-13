@@ -11,22 +11,24 @@ module.exports = {
                 if(!e) {
                     ServerManager.bindUser(uid, ws);
                     Log.info(`用户:${uid} 登陆成功，token:${token}`);
-                    let res_p = new ResPackage({
-                        handler:req_p.handler,
-                        event:req_p.event,
-                        rawData:{
-                            token: token
-                        }
-                    });
-                    BaseHandler.sendToClient(res_p, ws);
+                    BaseHandler.commonResponse(req_p, {
+                        code: GameCode.SUCCESS,
+                        token: token
+                    },ws)
                 }
                 else{
                     Log.error(`debugLogin genToken error，${e.toString()}`)
+                    BaseHandler.commonResponse(req_p, {
+                        code: GameCode.GEN_TOKEN_ERROR,
+                    },ws)
                 }
             });
         }
         else {
             Log.error(`debugLogin，没有uid`)
+            BaseHandler.commonResponse(req_p, {
+                code: GameCode.GEN_TOKEN_ERROR,
+            },ws)
         }
     },
 
