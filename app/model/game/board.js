@@ -92,8 +92,7 @@ class Board {
                 let b = new Block(i ,j);
                 let index = Math.floor(Math.random()*pool.length);
                 let p = pool[index];
-                p.move(i, j, true);
-                b.piece = p;
+                p.move(b, this, true);
                 this.blocks.push(b);
                 pool.splice(index, 1);
             }

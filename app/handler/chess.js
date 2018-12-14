@@ -138,13 +138,7 @@ module.exports = {
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
             let result = room.movePiece(pId, uid, x, y);
-            if(result){
-                Log.info(`移动棋子成功:${JSON.stringify(result)}`);
-                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,result:result},ws);
-            }
-            else{
-                BaseHandler.commonResponse(req_p,{code:GameCode.FLIP_ERROR,msg:`移动棋子发生错误！`},ws);
-            }
+            BaseHandler.commonResponse(req_p,result,ws);
         }
         else{
             Log.error(`room ${roomId} user ${uid} move ${pId} not legal`);

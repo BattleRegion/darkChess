@@ -189,18 +189,39 @@ class Room {
         if(this.canTurn(player)){
             let piece = this.board.findPiece(pId);
             if(piece && piece.side === player.side && piece.hasFlip){
-                if(piece.canMove(x,y,this.board)){
-
+                let moveResult = piece.canMove(x,y,this.board);
+                if(moveResult === 1){
+                    Log.info(`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
+                    let b = this.board.getBlock(piece.x,piece.y);
+                    piece.move(b, this.board, false);
+                    return {
+                        code:GameCode.SUCCESS,
+                        piece:piece
+                    }
+                }
+                else if(moveResult === 2){
+                    let atkBlock = this.board.getBlock(x, y);
+                    Log.info(`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
+                    piece.atk(atkBlock, this.board);
                 }
                 else{
-                    Log.error(`棋子移动非法 ${JSON.stringify(piece)} ${x} ${y}`);
+                    return {
+                        code:moveResult
+                    }
                 }
             }
             else{
-                Log.error(`尝试翻一个不属于自己的颜色 ${player.side} ${piece.side} roomId ${this.roomId} hasFlip ${piece.hasFlip}`)
+                Log.error(`尝试翻一个不属于自己的颜色 ${player.side} ${piece.side} roomId ${this.roomId} hasFlip ${piece.hasFlip}`);
+                return {
+                    code: GameCode.MOVE_ILLEGAL
+                }
             }
         }
-        return null;
+        else{
+            return {
+                code : GameCode.NOT_YOUR_TURN
+            }
+        }
     }
 }
 

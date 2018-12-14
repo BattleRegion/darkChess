@@ -14,11 +14,14 @@ class Piece  {
         this.hasDead = false;
     }
 
-    move(x, y, force){
-        if(force){
-            this.x = x;
-            this.y = y;
+    move(block,board,first){
+        if(!first){
+            let curBlock = board.getBlock(this.x, this.y);
+            curBlock.piece = null;
         }
+        this.x = block.x;
+        this.y = block.y;
+        block.piece = this;
     }
 
 
@@ -27,19 +30,40 @@ class Piece  {
         if(board.inBoardRange(x,y)){
             let px = this.x;
             let py = this.y;
+            let block = board.getBlock(x, y);
             if(this.type !== PTYPE.CANNON){
                 let crossPos = board.getCross(px,py);
                 let moveToStr = `${x}_${y}`;
                 Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的十字位置 ${JSON.stringify(crossPos)}`);
                 if(crossPos.includes(moveToStr)){
-                    return true;
+                    if(!block.piece){
+                        return 1;//可以移动
+                    }
+                    else{
+                        if (!block.piece.hasFlip){
+                            return GameCode.COMMON_CAN_NOT_MOVE_UN_FLIP
+                        }
+                        else {
+                            if(block.piece.side === this.side){
+                                return GameCode.CAN_NOT_MOVE_SAME_SIDE
+                            }
+                            else{
+                                return 2;//尝试攻击
+                            }
+                        }
+                    }
+                }
+                else{
+                    return GameCode.MOVE_OUT_RANGE
                 }
             }
             else{
 
             }
         }
-        return false
+        else{
+            return GameCode.MOVE_OUT_RANGE
+        }
     }
 
     info(){
@@ -58,26 +82,32 @@ class Piece  {
     }
 
     clientInfo(){
-        if(!this.hasDead){
-            let basicInfo = {
-                id:this.id,
-                x:this.x,
-                y:this.y,
-                hasFlip:this.hasFlip,
-            };
-            if(this.hasFlip){
-                basicInfo.type = this.type;
-                basicInfo.side = this.side;
-                basicInfo.index = this.index;
-                basicInfo.hp = this.hp;
-            }
-            return basicInfo;
+        let basicInfo = {
+            id:this.id,
+            x:this.x,
+            y:this.y,
+            hasFlip:this.hasFlip,
+            hasDead:this.hasDead
+        };
+        if(this.hasFlip){
+            basicInfo.type = this.type;
+            basicInfo.side = this.side;
+            basicInfo.index = this.index;
+            basicInfo.hp = this.hp;
         }
-        return null
+        return basicInfo;
     }
 
-    atk(piece){
+    atk(atkBlock, board){
+        if(this.type >= atkBlock.piece.type){
+            //吃子
+            let atkPiece = atkBlock.piece;
 
+            this.move()
+        }
+        else{
+            //自杀
+        }
     }
 }
 
