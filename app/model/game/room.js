@@ -60,6 +60,7 @@ class Room {
 
     broadcast(){
         let info = this.roomInfo(true);
+        info.code = GameCode.SUCCESS;
         let res_p = new ResPackage({
             handler:'chess',
             event:'roomInfo',

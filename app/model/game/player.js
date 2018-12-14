@@ -26,6 +26,7 @@ class Player {
                 handler:"chess",
                 event:"turn",
                 rawData:{
+                    code:GameCode.SUCCESS,
                     lock:!go
                 }
             });
