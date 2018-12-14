@@ -144,29 +144,31 @@ class Room {
         if(this.canTurn(player)){
             let piece = this.board.findPiece(pId);
             if(piece){
-                if(player.side !== Side.UNDEFINED && player.side !== piece.side){
-                    Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side} ${this.roomId}`);
-                    return {
-                        code : GameCode.FLIP_NOT_YOUR_SIDE
+                // if(player.side !== Side.UNDEFINED && player.side !== piece.side){
+                //     Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side} ${this.roomId}`);
+                //     return {
+                //         code : GameCode.FLIP_NOT_YOUR_SIDE
+                //     }
+                // }
+                // else{
+                //
+                // }
+
+                if(player.side === Side.UNDEFINED){
+                    player.side = piece.side;
+                    let otherPlayer = this.getOtherPlayer(uid);
+                    if(player.side === Side.BLACK){
+                        otherPlayer.side = Side.RED;
+                    }
+                    else{
+                        otherPlayer.side = Side.BLACK;
                     }
                 }
-                else{
-                    if(player.side === Side.UNDEFINED){
-                        player.side = piece.side;
-                        let otherPlayer = this.getOtherPlayer(uid);
-                        if(player.side === Side.BLACK){
-                            otherPlayer.side = Side.RED;
-                        }
-                        else{
-                            otherPlayer.side = Side.BLACK;
-                        }
-                    }
-                    piece.hasFlip = true;
-                    this.updateRoomInfoToDB();
-                    return {
-                        code:GameCode.SUCCESS,
-                        piece:piece.clientInfo()
-                    }
+                piece.hasFlip = true;
+                this.updateRoomInfoToDB();
+                return {
+                    code:GameCode.SUCCESS,
+                    piece:piece.clientInfo()
                 }
             }
             else{
