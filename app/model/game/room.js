@@ -194,15 +194,24 @@ class Room {
                     Log.info(`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
                     let b = this.board.getBlock(piece.x,piece.y);
                     piece.move(b, this.board, false);
+                    this.updateRoomInfoToDB();
                     return {
                         code:GameCode.SUCCESS,
-                        piece:piece
+                        piece:piece,
+                        type:"move"
                     }
                 }
                 else if(moveResult === 2){
                     let atkBlock = this.board.getBlock(x, y);
                     Log.info(`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
-                    piece.atk(atkBlock, this.board);
+                    let deadPiece = piece.atk(atkBlock, this.board);
+                    this.updateRoomInfoToDB();
+                    return {
+                        code:GameCode.SUCCESS,
+                        piece:piece,
+                        deadPiece:deadPiece,
+                        type:"atk"
+                    }
                 }
                 else{
                     return {

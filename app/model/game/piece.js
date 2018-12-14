@@ -102,11 +102,16 @@ class Piece  {
         if(this.type >= atkBlock.piece.type){
             //吃子
             let atkPiece = atkBlock.piece;
+            atkPiece.hasDead = true;
 
-            this.move()
+
+
+            return atkBlock.piece;
         }
         else{
             //自杀
+
+            return this;
         }
     }
 }
