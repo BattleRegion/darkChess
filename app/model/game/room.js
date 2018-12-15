@@ -209,8 +209,12 @@ class Room {
                 });
                 this.updateRoomInfoToDB();
                 let res_p = {
-                    code:GameCode.SUCCESS,
-                    piece:piece.clientInfo()
+                    handler:'chess',
+                    event:'flip',
+                    rawData:{
+                        code:GameCode.SUCCESS,
+                        piece:piece.clientInfo()
+                    }
                 };
                 this.broadcastSend(res_p);
                 return null;
@@ -246,9 +250,13 @@ class Room {
                     piece.move(b, this.board, false);
                     this.updateRoomInfoToDB();
                     let res_p =  {
-                        code:GameCode.SUCCESS,
-                        piece:piece,
-                        type:"move",
+                        handler:'chess',
+                        event:'move',
+                        rawData:{
+                            code:GameCode.SUCCESS,
+                            piece:piece,
+                            type:"move",
+                        }
                     };
                     this.broadcastSend(res_p);
                     return null;
@@ -266,12 +274,16 @@ class Room {
                     p.curHp = p.curHp - deadPiece.curHp;
                     this.updateRoomInfoToDB();
                     let res_p =  {
-                        code:GameCode.SUCCESS,
-                        piece:piece,
-                        deadPiece:deadPiece,
-                        type:"atk",
-                        p1Hp:this.p1.curHp,
-                        p2Hp:this.p2.curHp
+                        handler:'chess',
+                        event:'move',
+                        rawData:{
+                            code:GameCode.SUCCESS,
+                            piece:piece,
+                            deadPiece:deadPiece,
+                            type:"atk",
+                            p1Hp:this.p1.curHp,
+                            p2Hp:this.p2.curHp
+                        }
                     };
                     this.broadcastSend(res_p);
                     return null;
