@@ -26,7 +26,7 @@ module.exports = {
                             handler[event](req_p, ws);
                         }
                         else{
-                            Log.error(`不存在 客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 发送的 handler : ${handlerName} event: ${event}`);
+                            Log.error(`不存在 客户端 ${ws.realAddress} 发送的 handler : ${handlerName} event: ${event}`);
                         }
                     }
                     else{
@@ -35,17 +35,17 @@ module.exports = {
                 });
             }
             catch (e) {
-                Log.error(`不存在 客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 发送的 handler : ${handlerName}`);
+                Log.error(`不存在 客户端 ${ws.realAddress} 发送的 handler : ${handlerName}`);
             }
         }
         else{
-            Log.error(`服务器收到客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 非法数据包 : ${data}`);
+            Log.error(`服务器收到客户端 ${ws.realAddress} 非法数据包 : ${data}`);
         }
     },
 
     sendToClient: function(resPackage, ws){
         if(ws && ws.readyState === WebSocket.OPEN) {
-            Log.info(`发送消息到客户端 ${ws._socket['remoteAddress']}:${ws._socket['remotePort']} 消息内容 : ${JSON.stringify(resPackage)}`);
+            Log.info(`发送消息到客户端 ${ws.realAddress} 消息内容 : ${JSON.stringify(resPackage)}`);
             ws.send(JSON.stringify(resPackage));
         }
         else{

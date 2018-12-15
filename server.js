@@ -22,7 +22,8 @@ module.exports = {
 
         webSocketServer.on("connection", (ws,req)=>{
             let address = req.headers['x-real-ip'] || ws._socket['remoteAddress'];
-            Log.info(`客户端 ${address}:${ws._socket['remotePort']} 连接成功`);
+            ws.realAddress = `${address}:${ws._socket['remotePort']}`;
+            Log.info(`客户端 ${ws.realAddress} 连接成功`);
             ws.on("message", data=>{
                 Log.debug(`ws client receive msg ${data}`);
                 BaseHandler.parseReqPackage(data, ws);
@@ -30,8 +31,7 @@ module.exports = {
 
             ws.on("close", (code, reason)=>{
                 this.cleanWs(ws);
-                let address = req.headers['x-real-ip'] || ws._socket['remoteAddress'];
-                Log.info(`客户端 ${address}:${ws._socket['remotePort']} 断开 code ${code} reason ${reason}`);
+                Log.info(`客户端 ${ws.realAddress} 断开 code ${code} reason ${reason}`);
             });
 
             ws.on("error", e=>{
