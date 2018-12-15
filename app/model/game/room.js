@@ -297,7 +297,7 @@ class Room {
     }
 
     storeAction(action,detail){
-        let sql = new Command('insert into action(roomId,round,action,detail,createAt)',
+        let sql = new Command('insert into action(roomId,round,action,detail,createAt) values(?,?,?,?,?)',
             [this.roomId,this.round,action,JSON.stringify(detail),~~(new Date().getTime())]);
         Executor.query(DBEnv,sql,(e,r)=>{
             if(e){}

@@ -3,7 +3,8 @@ const WebSocket = require('ws');
 const Executor = require('dataAccess').executor;
 const CryptoUtil = require('../../util/cryptoUtil');
 const filterVerify = {
-    "user_debugLogin":true
+    "user_debugLogin":true,
+    "sys_heartbreak":true
 };
 module.exports = {
 
