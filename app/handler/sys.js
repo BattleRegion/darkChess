@@ -5,6 +5,9 @@ module.exports = {
         let res_p = new ResPackage({
             handler:req_p.handler,
             event:req_p.event,
+            rawData:{
+                code:GameCode.SUCCESS
+            }
         });
         BaseHandler.sendToClient(res_p, ws);
     }
