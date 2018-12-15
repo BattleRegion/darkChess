@@ -298,7 +298,7 @@ class Room {
 
     storeAction(action,detail){
         let sql = new Command('insert into action(roomId,round,action,detail,createAt)',
-            [this.roomId,this.round,action,detail,~~(new Date().getTime())])
+            [this.roomId,this.round,action,JSON.stringify(detail),~~(new Date().getTime())]);
         Executor.query(DBEnv,sql,(e,r)=>{
             if(e){}
             Log.error(`store action error ${e.toString()}`)
