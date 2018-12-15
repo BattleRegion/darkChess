@@ -19,6 +19,7 @@ class Room {
             this.p2 = new Player(p2, this.pc?PLAYER_TYPE.PC:PLAYER_TYPE.USER);
             this.board = new Board();
             this.curTurn = 0;
+            this.round = 0;
         }
     }
 
@@ -28,7 +29,7 @@ class Room {
         this.roomId = infoObj.id;
         this.roomState = infoObj.state;
         this.pc = infoObj.pc === 1;
-
+        this.round = infoObj.round?infoObj.round:0;
         this.curTurn = boardInfo.curTurn?boardInfo.curTurn:0;
 
         this.p1 = new Player(infoObj['p1_uid'], PLAYER_TYPE.USER);
@@ -49,6 +50,7 @@ class Room {
         return {
             roomId: this.roomId,
             roomState : this.roomState,
+            round:this.round,
             p1:this.p1.playerInfo(),
             p2:this.p2.playerInfo(),
             pc:this.pc,
@@ -66,6 +68,10 @@ class Room {
             event:'roomInfo',
             rawData:info
         });
+        this.broadcastSend(res_p);
+    }
+
+    broadcastSend(res_p){
         BaseHandler.sendToClient(res_p, this.p1.getWs());
         if(!this.pc){
             BaseHandler.sendToClient(res_p, this.p2.getWs());
@@ -106,6 +112,13 @@ class Room {
         return this.p2;
     }
 
+    getPlayerBySide(side){
+        if(this.p1.side === side){
+            return this.p1;
+        }
+        return this.p2;
+    }
+
     tryBeginGame(){
         if(this.p1.hasReady && this.p2.hasReady) {
             this.roomState = ROOM_STATE.ING;
@@ -117,15 +130,50 @@ class Room {
         }
     }
 
+    swapTurn(uid, cb){
+        let p = this.getPlayer(uid);
+        p.animEnd = true;
+        let otherP = this.getOtherPlayer(uid);
+        if(p.animEnd && otherP.animEnd){
+            if(this.curTurn === 0){
+                this.curTurn = 1;
+            }
+            else{
+                this.curTurn = 0;
+            }
+
+            if(this.p1.curHp <=0 || this.p2.curHp <=0){
+                this.updateRoomInfoToDB(()=>{
+                    let res_p = {
+                        handler:'chess',
+                        event:'roomEnd',
+                        rawData: {
+                            winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
+                        }
+                    };
+                    this.broadcastSend(res_p);
+                    cb(true);
+                },ROOM_STATE.END);
+            }
+            else{
+                this.turnUser();
+                this.updateRoomInfoToDB();
+                cb(false);
+            }
+        }
+        cb(false);
+    }
+
     turnUser(){
         if(this.curTurn===0){
-            this.p1.turn(true);
-            this.p2.turn(false);
+            this.p1.turn(true,this.round);
+            this.p2.turn(false,this.round);
         }
         else{
-            this.p1.turn(false);
-            this.p2.turn(true);
+            this.p1.turn(false,this.round);
+            this.p2.turn(true,this.round);
         }
+        this.round = this.round + 1
     }
 
     canTurn(player){
@@ -144,16 +192,6 @@ class Room {
         if(this.canTurn(player)){
             let piece = this.board.findPiece(pId);
             if(piece){
-                // if(player.side !== Side.UNDEFINED && player.side !== piece.side){
-                //     Log.error(`${uid} 尝试翻一个 不属于 自己的颜色 ${player.side} ${piece.side} ${this.roomId}`);
-                //     return {
-                //         code : GameCode.FLIP_NOT_YOUR_SIDE
-                //     }
-                // }
-                // else{
-                //
-                // }
-
                 if(player.side === Side.UNDEFINED){
                     player.side = piece.side;
                     let otherPlayer = this.getOtherPlayer(uid);
@@ -166,10 +204,12 @@ class Room {
                 }
                 piece.hasFlip = true;
                 this.updateRoomInfoToDB();
-                return {
+                let res_p = {
                     code:GameCode.SUCCESS,
                     piece:piece.clientInfo()
-                }
+                };
+                this.broadcastSend(res_p);
+                return null;
             }
             else{
                 return {
@@ -195,23 +235,31 @@ class Room {
                     let b = this.board.getBlock(piece.x,piece.y);
                     piece.move(b, this.board, false);
                     this.updateRoomInfoToDB();
-                    return {
+                    let res_p =  {
                         code:GameCode.SUCCESS,
                         piece:piece,
-                        type:"move"
-                    }
+                        type:"move",
+                    };
+                    this.broadcastSend(res_p);
+                    return null;
                 }
                 else if(moveResult === 2){
                     let atkBlock = this.board.getBlock(x, y);
                     Log.info(`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
                     let deadPiece = piece.atk(atkBlock, this.board);
+                    let p = this.getPlayerBySide(deadPiece.side);
+                    p.curHp = p.curHp - deadPiece.curHp;
                     this.updateRoomInfoToDB();
-                    return {
+                    let res_p =  {
                         code:GameCode.SUCCESS,
                         piece:piece,
                         deadPiece:deadPiece,
-                        type:"atk"
-                    }
+                        type:"atk",
+                        p1Hp:this.p1.curHp,
+                        p2Hp:this.p2.curHp
+                    };
+                    this.broadcastSend(res_p);
+                    return null;
                 }
                 else{
                     return {

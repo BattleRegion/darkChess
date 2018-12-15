@@ -133,11 +133,11 @@ class Board {
         return x >= 0 && x < this.width && y >= 0 && y < this.height;
     }
 
-    getCross(x,y){
-        let left = `${x-1}_${y}`;
-        let right = `${x+1}_${y}`;
-        let up = `${x}_${y+1}`;
-        let down = `${x}_${y-1}`;
+    getCross(x,y,offset){
+        let left = `${x-offset}_${y}`;
+        let right = `${x+offset}_${y}`;
+        let up = `${x}_${y+offset}`;
+        let down = `${x}_${y-offset}`;
         return [left,right,up,down];
     }
 

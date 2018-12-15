@@ -32,7 +32,7 @@ class Piece  {
             let py = this.y;
             let block = board.getBlock(x, y);
             if(this.type !== PTYPE.CANNON){
-                let crossPos = board.getCross(px,py);
+                let crossPos = board.getCross(px,py,1);
                 let moveToStr = `${x}_${y}`;
                 Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的十字位置 ${JSON.stringify(crossPos)}`);
                 if(crossPos.includes(moveToStr)){
@@ -58,7 +58,20 @@ class Piece  {
                 }
             }
             else{
-
+                Log.info(`当前行动棋子为cannon 无法移动只能攻击，隔山打牛`);
+                let crossPos = board.getCross(px,py,1);
+                let moveToStr = `${x}_${y}`;
+                if(crossPos.includes(moveToStr)){
+                    if(!block.piece){
+                        return GameCode.CANNON_CAN_NOT_MOVE;
+                    }
+                    else{
+                        return 2;
+                    }
+                }
+                else{
+                    return GameCode.MOVE_OUT_RANGE
+                }
             }
         }
         else{
@@ -99,19 +112,29 @@ class Piece  {
     }
 
     atk(atkBlock, board){
-        if(this.type >= atkBlock.piece.type){
+        if(this.type !== PTYPE.CANNON){
+            if(this.type >= atkBlock.piece.type){
+                //吃子
+                let atkPiece = atkBlock.piece;
+                atkPiece.hasDead = true;
+                atkBlock.piece = null;
+                this.move(atkBlock, board, false);
+                return atkPiece;
+            }
+            else{
+                //自杀
+                this.hasDead = true;
+                let curBlock = board.getBlock(this.x , this.y);
+                curBlock.piece = null;
+                return this;
+            }
+        }
+        else{
             //吃子
             let atkPiece = atkBlock.piece;
             atkPiece.hasDead = true;
-
-
-
-            return atkBlock.piece;
-        }
-        else{
-            //自杀
-
-            return this;
+            atkBlock.piece = null;
+            return atkPiece;
         }
     }
 }

@@ -8,6 +8,7 @@ class Player {
         this.hasReady = this.type !== PLAYER_TYPE.USER;
         this.side = Side.UNDEFINED;
         this.curHp = 60;
+        this.animEnd = false;
     }
 
     playerInfo(){
@@ -16,17 +17,21 @@ class Player {
             type:this.type,
             hasReady:this.hasReady,
             side:this.side,
-            curHp:this.curHp
+            curHp:this.curHp,
+            animEnd:this.animEnd
         }
     }
 
-    turn(go){
+    turn(go, round){
+        this.animEnd = false;
         if(this.type === PLAYER_TYPE.USER){
             let res_p = new ResPackage({
                 handler:"chess",
                 event:"turn",
                 rawData:{
                     code:GameCode.SUCCESS,
+                    side:this.side,
+                    round:round,
                     lock:!go
                 }
             });

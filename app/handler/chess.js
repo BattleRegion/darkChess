@@ -120,7 +120,9 @@ module.exports = {
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
             let result = room.flipPiece(pId,uid);
-            BaseHandler.commonResponse(req_p,result,ws);
+            if(result){
+                BaseHandler.commonResponse(req_p,result,ws);
+            }
         }
         else{
             Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
@@ -138,10 +140,32 @@ module.exports = {
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
             let result = room.movePiece(pId, uid, x, y);
-            BaseHandler.commonResponse(req_p,result,ws);
+            if(result){
+                BaseHandler.commonResponse(req_p,result,ws);
+            }
         }
         else{
             Log.error(`room ${roomId} user ${uid} move ${pId} not legal`);
+            BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
+        }
+    },
+
+    //行为动画结束
+    actionAniEnd:function(req_p,ws){
+        // let round = req_p.rawData.round;
+        let uid = req_p.rawData.uid;
+        let roomId = req_p.rawData.roomId;
+        let room = this.roomActionLegal(uid,roomId);
+        if(room && room.roomState === ROOM_STATE.ING){
+            room.swapTurn(uid, end=>{
+                if(end){
+                    //game end romove room
+                    delete this.rooms[roomId];
+                }
+            });
+        }
+        else{
+            Log.error(`room ${roomId} user ${uid} actionAniEnd not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },
