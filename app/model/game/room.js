@@ -271,7 +271,7 @@ class Room {
                     });
                     let deadPiece = piece.atk(atkBlock, this.board);
                     let p = this.getPlayerBySide(deadPiece.side);
-                    p.curHp = p.curHp - deadPiece.curHp;
+                    p.curHp = p.curHp - deadPiece.hp;
                     this.updateRoomInfoToDB();
                     let res_p =  {
                         handler:'chess',
