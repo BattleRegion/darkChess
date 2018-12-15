@@ -203,6 +203,10 @@ class Room {
                     }
                 }
                 piece.hasFlip = true;
+                this.storeAction('flip',{
+                    uid:uid,
+                    piece:piece
+                });
                 this.updateRoomInfoToDB();
                 let res_p = {
                     code:GameCode.SUCCESS,
@@ -232,6 +236,12 @@ class Room {
                 let moveResult = piece.canMove(x,y,this.board);
                 if(moveResult === 1){
                     Log.info(`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
+                    this.storeAction('move',{
+                        uid:uid,
+                        piece:piece,
+                        x:x,
+                        y:y
+                    });
                     let b = this.board.getBlock(piece.x,piece.y);
                     piece.move(b, this.board, false);
                     this.updateRoomInfoToDB();
@@ -246,6 +256,11 @@ class Room {
                 else if(moveResult === 2){
                     let atkBlock = this.board.getBlock(x, y);
                     Log.info(`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
+                    this.storeAction('atk',{
+                        uid:uid,
+                        piece:piece,
+                        atkPiece:atkBlock.piece
+                    });
                     let deadPiece = piece.atk(atkBlock, this.board);
                     let p = this.getPlayerBySide(deadPiece.side);
                     p.curHp = p.curHp - deadPiece.curHp;
@@ -279,6 +294,15 @@ class Room {
                 code : GameCode.NOT_YOUR_TURN
             }
         }
+    }
+
+    storeAction(action,detail){
+        let sql = new Command('insert into action(roomId,round,action,detail,createAt)',
+            [this.roomId,this.round,action,detail,~~(new Date().getTime())])
+        Executor.query(DBEnv,sql,(e,r)=>{
+            if(e){}
+            Log.error(`store action error ${e.toString()}`)
+        })
     }
 }
 

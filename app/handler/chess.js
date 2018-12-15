@@ -105,6 +105,9 @@ module.exports = {
             p.hasReady = true;
             room.tryBeginGame();
             BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
+            room.storeAction("ready",{
+                uid:uid,
+            })
         }
         else{
             Log.error(`user ${uid} ready ${roomId} not legal`);
@@ -152,11 +155,15 @@ module.exports = {
 
     //行为动画结束
     actionAniEnd:function(req_p,ws){
-        // let round = req_p.rawData.round;
+        let round = req_p.rawData.round;
         let uid = req_p.rawData.uid;
         let roomId = req_p.rawData.roomId;
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
+            room.storeAction("actionAniEnd",{
+                uid:uid,
+                round:round
+            });
             room.swapTurn(uid, end=>{
                 if(end){
                     //game end romove room
