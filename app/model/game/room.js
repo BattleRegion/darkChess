@@ -240,6 +240,10 @@ class Room {
                 let moveResult = piece.canMove(x,y,this.board);
                 if(moveResult === 1){
                     Log.info(`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
+                    let from = {
+                        x:piece.x,
+                        y:piece.y
+                    };
                     this.storeAction('move',{
                         uid:uid,
                         piece:piece,
@@ -254,8 +258,13 @@ class Room {
                         event:'move',
                         rawData:{
                             code:GameCode.SUCCESS,
-                            piece:piece,
                             type:"move",
+                            piece:piece,
+                            from:from,
+                            to:{
+                                x:piece.x,
+                                y:piece.y
+                            }
                         }
                     };
                     this.broadcastSend(res_p);
@@ -279,6 +288,7 @@ class Room {
                         rawData:{
                             code:GameCode.SUCCESS,
                             piece:piece,
+                            toPiece:atkBlock.piece,
                             deadPiece:deadPiece,
                             type:"atk",
                             p1Hp:this.p1.curHp,
