@@ -43,12 +43,15 @@ class Player {
                 Log.info(`PC ${this.uid} AI行动`);
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
-                    r.swapTurn(this.uid, end=>{
-                        if(end){
-                            //game end romove room
-                            this.chess.cleanRoomInfo(r.roomId);
+                    let res_p = {
+                        handler:'chess',
+                        event:'jumpAction',
+                        rawData: {
+                            code:GameCode.SUCCESS,
+                            side:this.side
                         }
-                    });
+                    };
+                    r.broadcastSend(res_p);
                 }
             }
         }
