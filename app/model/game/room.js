@@ -305,7 +305,7 @@ class Room {
                 }
             }
             else{
-                Log.error(`尝试翻一个不属于自己的颜色 ${player.side} ${piece.side} roomId ${this.roomId} hasFlip ${piece.hasFlip}`);
+                Log.error(`尝试移动一个不属于自己的颜色 ${player.side} ${piece?piece.side:'piece null'} roomId ${this.roomId} hasFlip ${piece?piece.hasFlip:'piece null'}`);
                 return {
                     code: GameCode.MOVE_ILLEGAL
                 }
