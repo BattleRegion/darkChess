@@ -148,6 +148,7 @@ class Room {
                         handler:'chess',
                         event:'roomEnd',
                         rawData: {
+                            code:GameCode.SUCCESS,
                             winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
                         }
                     };
