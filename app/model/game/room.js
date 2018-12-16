@@ -131,13 +131,16 @@ class Room {
     }
 
     swapTurn(uid, cb){
+        Log.info(`swapTurn ${uid}`);
         let p = this.getPlayer(uid);
         p.animEnd = true;
         let otherP = this.getOtherPlayer(uid);
         if(otherP.type === PLAYER_TYPE.PC){
             p.animEnd = true;
+            Log.info(`另外一个是PC 不用播放动画`);
         }
         if(p.animEnd && otherP.animEnd){
+            Log.info(`双方动画都结束，进入下一轮`);
             if(this.curTurn === 0){
                 this.curTurn = 1;
             }
@@ -165,10 +168,13 @@ class Room {
                 cb(false);
             }
         }
-        cb(false);
+        else{
+            cb(false);
+        }
     }
 
     turnUser(){
+        Log.info(`turnUser ${this.roomId}`);
         if(this.curTurn===0){
             this.p1.turn(true,this.round);
             this.p2.turn(false,this.round);
