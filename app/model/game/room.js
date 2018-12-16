@@ -134,6 +134,9 @@ class Room {
         let p = this.getPlayer(uid);
         p.animEnd = true;
         let otherP = this.getOtherPlayer(uid);
+        if(otherP.type === PLAYER_TYPE.PC){
+            p.animEnd = true;
+        }
         if(p.animEnd && otherP.animEnd){
             if(this.curTurn === 0){
                 this.curTurn = 1;

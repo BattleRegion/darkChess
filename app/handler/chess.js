@@ -75,7 +75,7 @@ module.exports = {
                             BaseHandler.sendToClient(res_p,room.getOtherPlayer(uid).getWs());
                         }
                         BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
-                        delete this.rooms[roomId];
+                        this.cleanRoomInfo(roomId);
                         Log.info(`用户 ${uid} 退出房间 ${roomId} 成功`)
                     }
                     else{
@@ -167,7 +167,7 @@ module.exports = {
             room.swapTurn(uid, end=>{
                 if(end){
                     //game end romove room
-                    delete this.rooms[roomId];
+                    this.cleanRoomInfo(roomId);
                 }
             });
         }
@@ -266,4 +266,9 @@ module.exports = {
         }
         return null;
     },
+
+    //清除房间
+    cleanRoomInfo(roomId){
+        delete this.rooms[roomId];
+    }
 };
