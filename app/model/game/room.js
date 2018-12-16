@@ -136,7 +136,7 @@ class Room {
         p.animEnd = true;
         let otherP = this.getOtherPlayer(uid);
         if(otherP.type === PLAYER_TYPE.PC){
-            p.animEnd = true;
+            otherP.animEnd = true;
             Log.info(`另外一个是PC 不用播放动画`);
         }
         if(p.animEnd && otherP.animEnd){
