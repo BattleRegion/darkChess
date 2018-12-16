@@ -194,6 +194,7 @@ module.exports = {
                     let roomId = info.id;
                     let room = new Room("","","",true);
                     room.setDBInfo(info);
+                    room.setChess(this);
                     this.rooms[roomId] = room;
                 }
                 callback(null);
@@ -217,6 +218,7 @@ module.exports = {
         let exist_room = this.isInRoom(p1_uid);
         if(!exist_room){
             let room = new Room(p1_uid, p2_uid, pc);
+            room.setChess(this);
             let info = room.roomInfo(false);
             let sql = new Command('insert into room(p1_uid,p2_uid,pc,state,info,createAt) values(?,?,?,?,?,?)',[info.p1.uid, info.p2.uid
                 ,info.pc,info.state,

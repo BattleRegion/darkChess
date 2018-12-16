@@ -7,7 +7,7 @@ const ResPackage = require('../net/resPackage');
 const DataAccess = require('dataAccess');
 const Executor = DataAccess.executor;
 const Command = DataAccess.command;
-const MOVE_ACTION = require('./moveAction');
+
 class Room {
 
     constructor(p1, p2, pc, delaySet){
@@ -21,6 +21,11 @@ class Room {
             this.curTurn = 0;
             this.round = 0;
         }
+    }
+
+    setChess(chess){
+        this.p1.chess = chess;
+        this.p2.chess = chess;
     }
 
     setDBInfo(info){
