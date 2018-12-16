@@ -1,7 +1,7 @@
 const Side = require('./side');
 const PLAYER_TYPE = require('./playerType');
 const ResPackage = require('../../model/net/resPackage');
-const Chess = require('../../handler/chess');
+const ChessHandler = require('../../handler/chess');
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -40,13 +40,14 @@ class Player {
         }
         else{
             if(go){
-                Log.info(`PC ${this.uid} AI行动`)
-                let r = Chess.isInRoom(this.uid);
+                Log.info(`PC ${this.uid} AI行动`);
+                console.log(ChessHandler);
+                let r = ChessHandler.isInRoom(this.uid);
                 if(r){
                     r.swapTurn(this.uid, end=>{
                         if(end){
                             //game end romove room
-                            Chess.cleanRoomInfo(r.roomId);
+                            ChessHandler.cleanRoomInfo(r.roomId);
                         }
                     });
                 }
