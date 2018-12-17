@@ -287,9 +287,9 @@ class Room {
                         atkPiece:atkBlock.piece
                     });
                     let deadPiece = piece.atk(atkBlock, this.board);
-                    Log.info(`攻击后死亡的棋子为:${JSON.stringify(deadPiece)}`);
                     let p = this.getPlayerBySide(deadPiece.side);
                     p.curHp = p.curHp - deadPiece.hp;
+                    Log.info(`攻击后死亡的棋子为:${JSON.stringify(deadPiece)} 受伤的玩家为 ${JSON.stringify(p.playerInfo())}`);
                     this.updateRoomInfoToDB();
                     let res_p =  {
                         handler:'chess',
