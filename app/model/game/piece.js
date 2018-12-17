@@ -58,26 +58,77 @@ class Piece  {
                 }
             }
             else{
-                Log.info(`当前行动棋子为cannon 无法移动只能攻击，隔山打牛`);
-                let crossPos = board.getCross(px,py,2);
-                let moveToStr = `${x}_${y}`;
-                Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的隔山打牛位置 ${JSON.stringify(crossPos)}`);
-                if(crossPos.includes(moveToStr)){
-                    if(!block.piece){
-                        return GameCode.CANNON_CAN_NOT_MOVE;
-                    }
-                    else{
-                        return 2;
-                    }
+                Log.info(`当前行动棋子为cannon 无法移动只能攻击，隔山打牛 当前位置: ${px} ${py},需要移动到 ${x} ${y}`);
+                if(!block.piece){
+                    return GameCode.CANNON_CAN_NOT_MOVE;
                 }
                 else{
-                    return GameCode.MOVE_OUT_RANGE
+                    let pieces = this.piecesBetween(block.piece, board);
+                    Log.info(`当中隔着的棋子为${pieces.length} ${JSON.stringify(pieces)}`);
+                    if(pieces.length === 2){
+                        return 2;
+                    }
+                    else{
+                        return GameCode.CANNON_CAN_NOT_MOVE;
+                    }
                 }
             }
         }
         else{
             return GameCode.MOVE_OUT_RANGE
         }
+    }
+
+    piecesBetween(piece, board){
+        let pieces = [];
+        if(this.x === piece.x){
+            let up = this.y < piece.y;
+            if(up){
+                for(let i = this.y;i<=piece.y;i++){
+                    let x = this.x;
+                    let y = i;
+                    let b = board.getBlock(x ,y);
+                    if(b.piece){
+                        pieces.push(b.piece);
+                    }
+                }
+            }
+            else{
+                for(let i = this.y;i>=piece.y;i--){
+                    let x = this.x;
+                    let y = i;
+                    let b = board.getBlock(x ,y);
+                    if(b.piece){
+                        pieces.push(b.piece);
+                    }
+                }
+            }
+
+        }
+        if(this.y === piece.y){
+            let right = this.x < piece.x;
+            if(right){
+                for(let i = this.x;i<=piece.x;i++){
+                    let x = i;
+                    let y = this.y;
+                    let b = board.getBlock(x ,y);
+                    if(b.piece){
+                        pieces.push(b.piece);
+                    }
+                }
+            }
+            else{
+                for(let i = this.x;i>=piece.x;i--){
+                    let x = i;
+                    let y = this.y;
+                    let b = board.getBlock(x ,y);
+                    if(b.piece){
+                        pieces.push(b.piece);
+                    }
+                }
+            }
+        }
+        return pieces;
     }
 
     info(){
