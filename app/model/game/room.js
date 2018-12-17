@@ -261,7 +261,7 @@ class Room {
                         x:x,
                         y:y
                     });
-                    let b = this.board.getBlock(piece.x,piece.y);
+                    let b = this.board.getBlock(x,y);
                     piece.move(b, this.board, false);
                     this.updateRoomInfoToDB();
                     let res_p =  {
