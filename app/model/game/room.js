@@ -297,7 +297,10 @@ class Room {
                         rawData:{
                             code:GameCode.SUCCESS,
                             atkPiece:piece,
-                            defPiece:deadPiece,
+                            defPiece:{
+                                x:x,
+                                y:y
+                            },
                             p1Hp:this.p1.curHp,
                             p2Hp:this.p2.curHp
                         }
