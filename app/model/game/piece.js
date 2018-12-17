@@ -59,8 +59,9 @@ class Piece  {
             }
             else{
                 Log.info(`当前行动棋子为cannon 无法移动只能攻击，隔山打牛`);
-                let crossPos = board.getCross(px,py,1);
+                let crossPos = board.getCross(px,py,2);
                 let moveToStr = `${x}_${y}`;
+                Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的隔山打牛位置 ${JSON.stringify(crossPos)}`);
                 if(crossPos.includes(moveToStr)){
                     if(!block.piece){
                         return GameCode.CANNON_CAN_NOT_MOVE;
