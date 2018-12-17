@@ -65,7 +65,7 @@ class Piece  {
                 else{
                     let pieces = this.piecesBetween(block.piece, board);
                     Log.info(`当中隔着的棋子为${pieces.length} ${JSON.stringify(pieces)}`);
-                    if(pieces.length === 2){
+                    if(pieces.length === 3){
                         return 2;
                     }
                     else{
