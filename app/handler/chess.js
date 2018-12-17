@@ -239,7 +239,7 @@ module.exports = {
             })
         }
         else {
-            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${JSON.stringify(exist_room)}`);
+            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId}`);
             //todo 通知用户房间信息
             exist_room.broadcast();
         }
