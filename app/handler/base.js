@@ -70,7 +70,7 @@ module.exports = {
                     else{
                         if(r === token){
                             Log.info(`验证 token:${token} 成功 uid:${uid}`);
-                            cb(parseInt(uid))
+                            cb(uid)
                         }
                         else{
                             cb(false)
