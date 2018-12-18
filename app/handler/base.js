@@ -2,6 +2,8 @@ const RequestPackage = require('../model/net/reqPackage');
 const WebSocket = require('ws');
 const Executor = require('dataAccess').executor;
 const CryptoUtil = require('../../util/cryptoUtil');
+const Request = require('request');
+const WXApi = require('../../conf/wxApi');
 const filterVerify = {
     "user_debugLogin":true,
     "sys_heartbreak":true
@@ -58,30 +60,25 @@ module.exports = {
         let apiStr = `${handler}_${event}`;
         Log.info(`尝试验证token : ${token} ${apiStr}`);
         if(!filterVerify[apiStr]){
-            try{
-                let originStr = CryptoUtil.toBasic(token, CommonConf['token_key']).toString();
-                Log.info(`origin ${originStr}`);
-                let uid = originStr.split('_')[0];
-                Executor.redisGet(DBEnv,RedisPrefix['USER_TOKEN'] + ":" + uid,(e,r)=>{
-                    if(e){
-                        Log.error(`验证token:${token}失败:${e.toString()}`);
-                        return cb(false);
+            let url = WXApi[DBEnv];
+            Request.post(`${url}/verifyToken`,{token:token,gameTag:'darkChess'},(err,response,body)=>{
+                if(err){
+                    Log.error(`验证token:${token}失败:${err.toString()}`);
+                    cb(false)
+                }
+                else{
+                    let bodyInfo = JSON.parse(body);
+                    Log.info(`verify token result ${body}`);
+                    if(bodyInfo["code"] === GameCode.SUCCESS){
+                        let uid = bodyInfo.data.uid;
+                        Log.info(`验证 token:${token} 成功 uid:${uid}`);
+                        cb(uid)
                     }
                     else{
-                        if(r === token){
-                            Log.info(`验证 token:${token} 成功 uid:${uid}`);
-                            cb(uid)
-                        }
-                        else{
-                            cb(false)
-                        }
+                        cb(false)
                     }
-                })
-            }
-            catch (e) {
-                Log.error(`验证token:${token}失败:${e.toString()}`);
-                cb(false);
-            }
+                }
+            })
         }
         else{
             Log.info(`${apiStr} 不需要验证`);

@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "dataAccess": "^0.1.7",
+    "request": "^2.88.0",
     "ws": "^6.1.2"
   },
   "devDependencies": {},
