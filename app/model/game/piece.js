@@ -164,29 +164,46 @@ class Piece  {
     }
 
     atk(atkBlock, board){
-        if(this.type !== PTYPE.CANNON){
-            if(this.type >= atkBlock.piece.type){
-                //吃子
-                let atkPiece = atkBlock.piece;
-                atkPiece.hasDead = true;
-                atkBlock.piece = null;
-                this.move(atkBlock, board, false);
-                return atkPiece;
-            }
-            else{
-                //自杀
-                this.hasDead = true;
-                let curBlock = board.getBlock(this.x , this.y);
-                curBlock.piece = null;
-                return this;
-            }
-        }
-        else{
+        if(this.type === PTYPE.SOLDIER && atkBlock.piece.type === PTYPE.EMPEROR){
             //吃子
             let atkPiece = atkBlock.piece;
             atkPiece.hasDead = true;
             atkBlock.piece = null;
+            this.move(atkBlock, board, false);
             return atkPiece;
+        }
+        else if(this.type === PTYPE.EMPEROR && atkBlock.piece.type === PTYPE.SOLDIER){
+            //自杀
+            this.hasDead = true;
+            let curBlock = board.getBlock(this.x , this.y);
+            curBlock.piece = null;
+            return this;
+        }
+        else{
+            if(this.type !== PTYPE.CANNON){
+                if(this.type >= atkBlock.piece.type){
+                    //吃子
+                    let atkPiece = atkBlock.piece;
+                    atkPiece.hasDead = true;
+                    atkBlock.piece = null;
+                    this.move(atkBlock, board, false);
+                    return atkPiece;
+                }
+                else{
+                    //自杀
+                    this.hasDead = true;
+                    let curBlock = board.getBlock(this.x , this.y);
+                    curBlock.piece = null;
+                    return this;
+                }
+            }
+            else{
+                //吃子
+                let atkPiece = atkBlock.piece;
+                atkPiece.hasDead = true;
+                atkBlock.piece = null;
+                return atkPiece;
+            }
         }
     }
 }
