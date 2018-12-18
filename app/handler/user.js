@@ -3,6 +3,17 @@ const Executor = DataAccess.executor;
 const CryptoUtil = require('../../util/cryptoUtil');
 
 module.exports = {
+
+    bindUser: function(req_p, ws){
+        let rawData = req_p.rawData;
+        let uid = rawData['uid'].toString();
+        ServerManager.bindUser(uid, ws);
+        Log.info(`用户:${uid} 绑定成功`);
+        BaseHandler.commonResponse(req_p, {
+            code: GameCode.SUCCESS,
+        },ws)
+    },
+
     debugLogin: function(req_p, ws) {
         let rawData = req_p.rawData;
         let uid = rawData['uid'].toString();
