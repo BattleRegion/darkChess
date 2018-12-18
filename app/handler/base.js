@@ -60,6 +60,7 @@ module.exports = {
         if(!filterVerify[apiStr]){
             try{
                 let originStr = CryptoUtil.toBasic(token, CommonConf['token_key']).toString();
+                Log.info(`origin ${originStr}`);
                 let uid = originStr.split('_')[0];
                 Executor.redisGet(DBEnv,RedisPrefix['USER_TOKEN'] + ":" + uid,(e,r)=>{
                     if(e){
