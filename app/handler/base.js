@@ -63,7 +63,7 @@ module.exports = {
             let url = WXApi[DBEnv];
             let postBody = {
                 url: `${url}/verifyToken`,
-                body: {token:token,gameTag:'darkChess'},
+                body: JSON.stringify({token:token,gameTag:'darkChess'}),
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
