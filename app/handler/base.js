@@ -61,7 +61,14 @@ module.exports = {
         Log.info(`尝试验证token : ${token} ${apiStr}`);
         if(!filterVerify[apiStr]){
             let url = WXApi[DBEnv];
-            Request.post(`${url}/verifyToken`,{token:token,gameTag:'darkChess'},(err,response,body)=>{
+            let postBody = {
+                url: `${url}/verifyToken`,
+                body: {token:token,gameTag:'darkChess'},
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            };
+            Request.post(postBody,(err,response,body)=>{
                 if(err){
                     Log.error(`验证token:${token}失败:${err.toString()}`);
                     cb(false)
