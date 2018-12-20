@@ -213,35 +213,54 @@ module.exports = {
         }
     },
 
+    //realCreate
+    realCreateRoom: function(p1_uid, p2_uid, pc){
+        let room = new Room(p1_uid, p2_uid, pc);
+        room.setChess(this);
+        let createAt =  ~~(new Date().getTime()/1000);
+        room.createAt = createAt;
+        let info = room.roomInfo(false);
+        let sql = new Command('insert into room(p1_uid,p2_uid,pc,state,info,createAt) values(?,?,?,?,?,?)',[info.p1.uid, info.p2.uid
+            ,info.pc,info.state,
+            JSON.stringify(info),
+            createAt]);
+        Executor.query(DBEnv, sql, (e,r)=>{
+            if(!e){
+                let roomId = r['insertId'];
+                room.roomId = roomId;
+                this.rooms[roomId] = room;
+                room.updateRoomInfoToDB();
+                Log.info(`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
+                room.broadcast();
+            }
+            else{
+                Log.error(`create room db error : ${e.toString()}`);
+            }
+        })
+    },
+
     //创建对局房间
     createRoom: function(p1_uid, p2_uid, pc){
         let exist_room = this.isInRoom(p1_uid);
         if(!exist_room){
-            let room = new Room(p1_uid, p2_uid, pc);
-            room.setChess(this);
-            let info = room.roomInfo(false);
-            let sql = new Command('insert into room(p1_uid,p2_uid,pc,state,info,createAt) values(?,?,?,?,?,?)',[info.p1.uid, info.p2.uid
-                ,info.pc,info.state,
-                JSON.stringify(info),
-                ~~(new Date().getTime()/1000)]);
-            Executor.query(DBEnv, sql, (e,r)=>{
-                if(!e){
-                    let roomId = r['insertId'];
-                    room.roomId = roomId;
-                    this.rooms[roomId] = room;
-                    room.updateRoomInfoToDB();
-                    Log.info(`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
-                    room.broadcast();
-                }
-                else{
-                    Log.error(`create room db error : ${e.toString()}`);
-                }
-            })
+            this.realCreateRoom(p1_uid, p2_uid, pc);
         }
         else {
-            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId}`);
-            //todo 通知用户房间信息
-            exist_room.broadcast();
+            let curDate = ~~(new Date().getTime()/1000);
+            let roomCreateAt = ~~(exist_room.createAt);
+            let timeoutDis = 60 * 30;
+            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId} 当前时间${curDate} 房间创建时间 ${roomCreateAt}`);
+            if(curDate - roomCreateAt >= timeoutDis){
+                //todo
+                Log.info(`房间超时，创建新的房间`);
+                exist_room.roomEnd(() =>{
+                    this.realCreateRoom(p1_uid, p2_uid, pc);
+                })
+            }
+            else{
+                //todo 通知用户房间信息
+                exist_room.broadcast();
+            }
         }
     },
 

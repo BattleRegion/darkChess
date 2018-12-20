@@ -20,6 +20,7 @@ class Room {
             this.board = new Board();
             this.curTurn = 0;
             this.round = 0;
+            this.createAt = 0;
         }
     }
 
@@ -34,6 +35,7 @@ class Room {
         this.roomId = infoObj.id;
         this.roomState = infoObj.state;
         this.pc = infoObj.pc === 1;
+        this.createAt = infoObj['createAt'];
         this.round = infoObj.round?infoObj.round:0;
         this.curTurn = boardInfo.curTurn?boardInfo.curTurn:0;
 
@@ -154,18 +156,7 @@ class Room {
             }
 
             if(this.p1.curHp <=0 || this.p2.curHp <=0){
-                this.updateRoomInfoToDB(()=>{
-                    let res_p = {
-                        handler:'chess',
-                        event:'roomEnd',
-                        rawData: {
-                            code:GameCode.SUCCESS,
-                            winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
-                        }
-                    };
-                    this.broadcastSend(res_p);
-                    cb(true);
-                },ROOM_STATE.END);
+                this.roomEnd(cb);
             }
             else{
                 this.turnUser();
@@ -176,6 +167,21 @@ class Room {
         else{
             cb(false);
         }
+    }
+
+    roomEnd(cb){
+        this.updateRoomInfoToDB(()=>{
+            let res_p = {
+                handler:'chess',
+                event:'roomEnd',
+                rawData: {
+                    code:GameCode.SUCCESS,
+                    winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
+                }
+            };
+            this.broadcastSend(res_p);
+            cb(true);
+        },ROOM_STATE.END);
     }
 
     turnUser(){
