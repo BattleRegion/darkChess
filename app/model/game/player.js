@@ -10,6 +10,8 @@ class Player {
         this.curHp = 60;
         this.animEnd = false;
         this.chess = null;
+        this.timer = null;
+        this.timeoutLock = false;
     }
 
     playerInfo(){
@@ -21,6 +23,22 @@ class Player {
             curHp:this.curHp,
             animEnd:this.animEnd
         }
+    }
+
+    beginTimer(){
+        this.clearTimer();
+        const timeout = 1500;
+        this.timer = setTimeout(()=>{
+            this.clearTimer();
+            this.timeoutLock = true;
+            Log.info(`用户 ${this.uid}操作 ${timeout} 超时`);
+            this.chess.forceTurnUser(this.uid);
+        },timeout)
+    }
+
+    clearTimer(){
+        this.timer&&clearInterval(this.timer);
+        this.timer = null;
     }
 
     turn(go, round){
@@ -36,7 +54,9 @@ class Player {
                     lock:!go
                 }
             });
+            this.timeoutLock = false;
             BaseHandler.sendToClient(res_p,this.getWs());
+            this.beginTimer();
         }
         else{
             if(go){

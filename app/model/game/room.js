@@ -192,10 +192,10 @@ class Room {
     }
 
     canTurn(player){
-        if(player === this.p1 && this.curTurn === 0){
+        if(player === this.p1 && this.curTurn === 0 && !this.p1.timeoutLock){
             return true;
         }
-        if(player === this.p2 && this.curTurn === 1){
+        if(player === this.p2 && this.curTurn === 1 && !this.p1.timeoutLock){
             return true;
         }
         Log.error(`当前并不是${player.uid}的回合，不能行动！`);

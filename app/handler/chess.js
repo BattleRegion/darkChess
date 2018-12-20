@@ -272,5 +272,14 @@ module.exports = {
     //清除房间
     cleanRoomInfo(roomId){
         delete this.rooms[roomId];
+    },
+
+    //force
+    forceTurnUser(uid){
+        let exist_room = this.isInRoom(uid);
+        if(exist_room){
+            Log.info(`force turn user ${exist_room.roomId} ${uid}`)
+            exist_room.turnUser();
+        }
     }
 };
