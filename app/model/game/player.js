@@ -74,7 +74,7 @@ class Player {
                         form: form
                     };
                     Log.info(`发送到AI 服务器`);
-                    Log.info(form);
+                    Log.info(JSON.stringify(form));
                     Request.post(postBody,(err,response,body)=>{
                         if(err){
                             Log.error(`AI 处理 失败:${err.toString()}`);
