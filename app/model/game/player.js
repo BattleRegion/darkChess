@@ -81,6 +81,7 @@ class Player {
                             Log.error(`AI 处理 失败:${err.toString()}`);
                         }
                         else{
+                            console.log(body);
                             // let bodyInfo = JSON.parse(body);
                             // Log.info(`ai play result ${body}`);
                             //跳过
