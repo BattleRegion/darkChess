@@ -64,43 +64,54 @@ class Player {
                 Log.info(`PC ${this.uid} AI行动`);
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
-                    const aiUrl = `https://dchess.magiclizi.com/ai/`;
-                    let form = {
+                    if(r.p1.uid === 'oC_No5P5Bah9rb3teBP3cuTOpTHs'){
+                        const aiUrl = `https://dchess.magiclizi.com/ai/`;
+                        let form = {
                             boardInfo:r.board.boardInfo(false),
                             side:this.side
-                    };
-                    let postBody = {
-                        'content-type': 'application/json',
-                        url: aiUrl,
-                        json: form
-                    };
-                    Log.info(`发送到AI 服务器`);
-                    Log.info(JSON.stringify(form));
-                    Request.post(postBody,(err,response,body)=>{
-                        if(err){
-                            Log.error(`AI 处理 失败:${err.toString()}`);
-                        }
-                        else{
-                            let bodyInfo = body;
-                            if(bodyInfo.type === "move") {
-                                Log.info(`ai move ${JSON.stringify(bodyInfo)}`);
+                        };
+                        let postBody = {
+                            url: aiUrl,
+                            json: form
+                        };
+                        Log.info(`发送到AI 服务器`);
+                        Log.info(JSON.stringify(form));
+                        Request.post(postBody,(err,response,body)=>{
+                            if(err){
+                                Log.error(`AI 处理 失败:${err.toString()}`);
                             }
-                            else if(bodyInfo.type === "flip"){
-                                Log.info(`ai flip ${JSON.stringify(bodyInfo)}`);
-                            }
-
-                            //跳过
-                            let res_p = {
-                                handler:'chess',
-                                event:'jumpAction',
-                                rawData: {
-                                    code:GameCode.SUCCESS,
-                                    side:this.side
+                            else{
+                                let bodyInfo = body;
+                                if(bodyInfo.type === "move") {
+                                    Log.info(`ai move ${JSON.stringify(bodyInfo)}`);
+                                    let pid = bodyInfo['pid'];
+                                    let x = bodyInfo['x'];
+                                    let y = bodyInfo['y'];
+                                    r.movePiece(pid, this.uid, x, y);
                                 }
-                            };
-                            r.broadcastSend(res_p);
-                        }
-                    });
+                                else if(bodyInfo.type === "flip"){
+                                    Log.info(`ai flip ${JSON.stringify(bodyInfo)}`);
+                                    let pid = bodyInfo['pid'];
+                                    r.flipPiece(pid,this.uid);
+                                }
+                                else{
+                                    Log.error(`ai action error ${JSON.stringify(bodyInfo)}`);
+                                }
+                            }
+                        });
+                    }
+                    else{
+                        //跳过
+                        let res_p = {
+                            handler:'chess',
+                            event:'jumpAction',
+                            rawData: {
+                                code:GameCode.SUCCESS,
+                                side:this.side
+                            }
+                        };
+                        r.broadcastSend(res_p);
+                    }
                 }
             }
         }

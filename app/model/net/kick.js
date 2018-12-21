@@ -5,6 +5,9 @@ class Kick extends ResPackage{
         super({});
         this.handler = 'user';
         this.event = 'kick';
+        this.rawData = {
+            code: GameCode.SUCCESS
+        }
     }
 }
 
