@@ -77,8 +77,8 @@ class Player {
                             Log.error(`AI 处理 失败:${err.toString()}`);
                         }
                         else{
-                            let bodyInfo = JSON.parse(body);
-                            Log.info(`ai play result ${body}`);
+                            // let bodyInfo = JSON.parse(body);
+                            // Log.info(`ai play result ${body}`);
                             //跳过
                             let res_p = {
                                 handler:'chess',
