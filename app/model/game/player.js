@@ -81,9 +81,14 @@ class Player {
                             Log.error(`AI 处理 失败:${err.toString()}`);
                         }
                         else{
-                            console.log(body);
-                            // let bodyInfo = JSON.parse(body);
-                            // Log.info(`ai play result ${body}`);
+                            let bodyInfo = JSON.parse(body);
+                            if(bodyInfo.type === "move") {
+                                Log.info(`ai move ${body}`);
+                            }
+                            else if(bodyInfo.type === "flip"){
+                                Log.info(`ai flip ${body}`);
+                            }
+
                             //跳过
                             let res_p = {
                                 handler:'chess',
