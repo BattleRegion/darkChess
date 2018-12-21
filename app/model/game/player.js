@@ -64,6 +64,7 @@ class Player {
                 Log.info(`PC ${this.uid} AI行动`);
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
+                    console.log(r);
                     const aiUrl = `https://dchess.magiclizi.com/ai`;
                     let postBody = {
                         url: aiUrl,
