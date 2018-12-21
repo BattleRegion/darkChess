@@ -70,8 +70,9 @@ class Player {
                             side:this.side
                     };
                     let postBody = {
+                        'content-type': 'application/json',
                         url: aiUrl,
-                        form: form
+                        json: form
                     };
                     Log.info(`发送到AI 服务器`);
                     Log.info(JSON.stringify(form));
