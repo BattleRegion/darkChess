@@ -81,12 +81,12 @@ class Player {
                             Log.error(`AI 处理 失败:${err.toString()}`);
                         }
                         else{
-                            let bodyInfo = JSON.parse(body);
+                            let bodyInfo = body;
                             if(bodyInfo.type === "move") {
-                                Log.info(`ai move ${body}`);
+                                Log.info(`ai move ${JSON.stringify(bodyInfo)}`);
                             }
                             else if(bodyInfo.type === "flip"){
-                                Log.info(`ai flip ${body}`);
+                                Log.info(`ai flip ${JSON.stringify(bodyInfo)}`);
                             }
 
                             //跳过
