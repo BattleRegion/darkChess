@@ -57,7 +57,7 @@ class Player {
             });
             this.timeoutLock = false;
             BaseHandler.sendToClient(res_p,this.getWs());
-            // this.beginTimer();
+            this.beginTimer();
         }
         else{
             if(go){
