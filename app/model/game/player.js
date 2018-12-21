@@ -65,13 +65,16 @@ class Player {
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
                     const aiUrl = `https://dchess.magiclizi.com/ai/`;
-                    let postBody = {
-                        url: aiUrl,
-                        form: {
+                    let form = {
                             boardInfo:r.board.boardInfo(false),
                             side:this.side
-                        },
                     };
+                    let postBody = {
+                        url: aiUrl,
+                        form: form
+                    };
+                    Log.info(`发送到AI 服务器`);
+                    Log.info(form);
                     Request.post(postBody,(err,response,body)=>{
                         if(err){
                             Log.error(`AI 处理 失败:${err.toString()}`);
