@@ -1,6 +1,7 @@
 const Side = require('./side');
 const PLAYER_TYPE = require('./playerType');
 const ResPackage = require('../../model/net/resPackage');
+const Request = require('request');
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -63,15 +64,33 @@ class Player {
                 Log.info(`PC ${this.uid} AI行动`);
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
-                    let res_p = {
-                        handler:'chess',
-                        event:'jumpAction',
-                        rawData: {
-                            code:GameCode.SUCCESS,
+                    const aiUrl = `https://dchess.magiclizi.com/ai`;
+                    let postBody = {
+                        url: aiUrl,
+                        form: {
+                            boardInfo:r.boardInfo(false),
                             side:this.side
-                        }
+                        },
                     };
-                    r.broadcastSend(res_p);
+                    Request.post(postBody,(err,response,body)=>{
+                        if(err){
+                            Log.error(`AI 处理 失败:${err.toString()}`);
+                        }
+                        else{
+                            let bodyInfo = JSON.parse(body);
+                            Log.info(`ai play result ${body}`);
+                            //跳过
+                            let res_p = {
+                                handler:'chess',
+                                event:'jumpAction',
+                                rawData: {
+                                    code:GameCode.SUCCESS,
+                                    side:this.side
+                                }
+                            };
+                            r.broadcastSend(res_p);
+                        }
+                    });
                 }
             }
         }
