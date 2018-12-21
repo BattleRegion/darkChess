@@ -36,7 +36,7 @@ module.exports = {
             });
         }
         else {
-            Log.error(`debugLogin，没有uid`)
+            Log.error(`debugLogin，没有uid`);
             BaseHandler.commonResponse(req_p, {
                 code: GameCode.GEN_TOKEN_ERROR,
             },ws)

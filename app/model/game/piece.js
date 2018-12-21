@@ -202,6 +202,7 @@ class Piece  {
                 let atkPiece = atkBlock.piece;
                 atkPiece.hasDead = true;
                 atkBlock.piece = null;
+                this.move(atkBlock, board, false);
                 return atkPiece;
             }
         }

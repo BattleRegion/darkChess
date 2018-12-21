@@ -104,7 +104,7 @@ module.exports = {
             let p = room.getPlayer(uid);
             p.hasReady = true;
             room.tryBeginGame();
-            BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws)
+            BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws);
             room.storeAction("ready",{
                 uid:uid,
             })
