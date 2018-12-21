@@ -82,39 +82,47 @@ class Player {
                             }
                             else{
                                 let bodyInfo = body;
+                                let result = null;
                                 if(bodyInfo.type === "move") {
                                     Log.info(`ai move ${JSON.stringify(bodyInfo)}`);
                                     let pid = bodyInfo['pid'];
                                     let x = bodyInfo['x'];
                                     let y = bodyInfo['y'];
-                                    r.movePiece(pid, this.uid, x, y);
+                                    result = r.movePiece(pid, this.uid, x, y);
                                 }
                                 else if(bodyInfo.type === "flip"){
                                     Log.info(`ai flip ${JSON.stringify(bodyInfo)}`);
                                     let pid = bodyInfo['pid'];
-                                    r.flipPiece(pid,this.uid);
+                                    result = r.flipPiece(pid,this.uid);
                                 }
                                 else{
                                     Log.error(`ai action error ${JSON.stringify(bodyInfo)}`);
+                                }
+                                if(result){
+                                    this.userJump(r)
                                 }
                             }
                         });
                     }
                     else{
-                        //跳过
-                        let res_p = {
-                            handler:'chess',
-                            event:'jumpAction',
-                            rawData: {
-                                code:GameCode.SUCCESS,
-                                side:this.side
-                            }
-                        };
-                        r.broadcastSend(res_p);
+                        this.userJump(r)
                     }
                 }
             }
         }
+    }
+
+    userJump(r){
+        //跳过
+        let res_p = {
+            handler:'chess',
+            event:'jumpAction',
+            rawData: {
+                code:GameCode.SUCCESS,
+                side:this.side
+            }
+        };
+        r.broadcastSend(res_p);
     }
 
     getWs(){
