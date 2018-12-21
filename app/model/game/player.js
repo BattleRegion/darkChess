@@ -38,7 +38,7 @@ class Player {
     }
 
     clearTimer(){
-        this.timer&&clearInterval(this.timer);
+        this.timer&&clearTimeout(this.timer);
         this.timer = null;
     }
 
