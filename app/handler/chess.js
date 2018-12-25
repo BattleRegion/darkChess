@@ -3,6 +3,7 @@ const ResPackage = require('../model/net/resPackage');
 const DataAccess = require('dataAccess');
 const ROOM_STATE = require('../model/game/roomState');
 const PLAYER_TYPE = require('../model/game/playerType');
+const CryptoUtil = require('../../util/cryptoUtil');
 const Executor = DataAccess.executor;
 const Command = DataAccess.command;
 module.exports = {
@@ -181,12 +182,31 @@ module.exports = {
     //邀请好友
     inviteFriend:function(req_p,ws){
         let uid = req_p.rawData.uid;
-
+        this.createRoom(uid, -1, false, room => {
+            let rId = CryptoUtil.toSecret(room.roomId, CommonConf['roomId_key']);
+            BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,roomId:rId},ws);
+        });
     },
 
     //进入好友房间
     joinFriendRoom:function(req_p,ws){
-
+        try{
+            let uid = req_p.rawData['uid'];
+            let sRoomId = req_p.rawData['roomId'];
+            let roomId = CryptoUtil.toBasic(sRoomId, CommonConf['roomId_key']);
+            let r = this.rooms[roomId];
+            if(r){
+                r.joinRoom(uid);
+            }
+            else{
+                Log.error(`joinFriendRoom error room ${roomId} not exist!`);
+                BaseHandler.commonResponse(req_p,{code:GameCode.JOIN_FRIEND_ROOM_ERROR},ws);
+            }
+        }
+        catch (e) {
+            Log.error(`joinFriendRoom error ${e.toString()}`);
+            BaseHandler.commonResponse(req_p,{code:GameCode.JOIN_FRIEND_ROOM_ERROR},ws);
+        }
     },
 
     // ------------分割线----------
@@ -225,7 +245,7 @@ module.exports = {
     },
 
     //realCreate
-    realCreateRoom: function(p1_uid, p2_uid, pc){
+    realCreateRoom: function(p1_uid, p2_uid, pc, cb){
         let room = new Room(p1_uid, p2_uid, pc);
         room.setChess(this);
         let createAt =  ~~(new Date().getTime()/1000);
@@ -243,6 +263,7 @@ module.exports = {
                 room.updateRoomInfoToDB();
                 Log.info(`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
                 room.broadcast();
+                cb&&cb(room);
             }
             else{
                 Log.error(`create room db error : ${e.toString()}`);
@@ -251,10 +272,10 @@ module.exports = {
     },
 
     //创建对局房间
-    createRoom: function(p1_uid, p2_uid, pc){
+    createRoom: function(p1_uid, p2_uid, pc, cb){
         let exist_room = this.isInRoom(p1_uid);
         if(!exist_room){
-            this.realCreateRoom(p1_uid, p2_uid, pc);
+            this.realCreateRoom(p1_uid, p2_uid, pc, cb);
         }
         else {
             let curDate = ~~(new Date().getTime()/1000);
@@ -266,7 +287,7 @@ module.exports = {
                 Log.info(`房间超时，创建新的房间`);
                 exist_room.updateRoomInfoToDB(()=>{
                     this.cleanRoomInfo(exist_room.roomId);
-                    this.realCreateRoom(p1_uid, p2_uid, pc);
+                    this.realCreateRoom(p1_uid, p2_uid, pc, cb);
                 },ROOM_STATE.END);
             }
             else{

@@ -343,6 +343,29 @@ class Room {
             }
         })
     }
+
+    joinRoom(uid) {
+        this.p2 = new Player(uid, PLAYER_TYPE.USER);
+        let info = this.roomInfo(true);
+        info.code = GameCode.SUCCESS;
+        let res_p = new ResPackage({
+            handler:'chess',
+            event:'roomInfo',
+            rawData:info
+        });
+
+        let res_p_1 = new ResPackage({
+            handler:'chess',
+            event:'friendJoin',
+            rawData:{
+                uid:uid,
+            }
+        });
+
+        BaseHandler.sendToClient(res_p, this.p2.getWs());
+        BaseHandler.sendToClient(res_p_1, this.p1.getWs());
+    }
+
 }
 
 module.exports = Room;

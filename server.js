@@ -2,6 +2,8 @@ const WebSocket = require('ws');
 const BaseHandler = require('./app/handler/base');
 const KickPackage = require('./app/model/net/kick');
 const Chess = require('./app/handler/chess');
+const Request = require('request');
+
 module.exports = {
 
     curServer : null,
@@ -55,12 +57,23 @@ module.exports = {
         });
     },
 
-    bindUser : function(uid, ws){
-        if(this.getWsByUid(uid)){
-            this.kickUser(uid);
-        }
-        this.userWs[uid] = ws;
-        Log.info(`绑定用户 ${uid} 到 ws 当前用户数量 ${Object.keys(this.userWs).length}`);
+    bindUser : function(uid, ws, cb){
+        //存储用户信息
+        let url = `https://wxlogin.magiclizi.com/userInfo?uid=${uid}`;
+        Request(url,(err,res,body) =>{
+            if(err){
+                Log.error(`binduser request error ${err}`);
+                cb&&cb(false);
+            }
+            else{
+                let userInfo = JSON.parse(body);
+                Log.info(`绑定用户 ${uid} ${body} 到 ws 当前用户数量 ${Object.keys(this.userWs).length}`);
+                if(this.getWsByUid(uid)){
+                    this.kickUser(uid);
+                }
+                this.userWs[uid] = ws;
+            }
+        });
     },
 
     kickUser : function(uid){
