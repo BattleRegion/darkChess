@@ -178,6 +178,17 @@ module.exports = {
     },
 
 
+    //邀请好友
+    inviteFriend:function(req_p,ws){
+        let uid = req_p.rawData.uid;
+
+    },
+
+    //进入好友房间
+    joinFriendRoom:function(req_p,ws){
+
+    },
+
     // ------------分割线----------
 
     //从数据库初始化当前房间
@@ -253,9 +264,10 @@ module.exports = {
             if(curDate - roomCreateAt >= timeoutDis){
                 //todo
                 Log.info(`房间超时，创建新的房间`);
-                exist_room.roomEnd(() =>{
+                exist_room.updateRoomInfoToDB(()=>{
+                    this.cleanRoomInfo(exist_room.roomId);
                     this.realCreateRoom(p1_uid, p2_uid, pc);
-                })
+                },ROOM_STATE.END);
             }
             else{
                 //todo 通知用户房间信息
