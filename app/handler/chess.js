@@ -178,6 +178,17 @@ module.exports = {
         }
     },
 
+    //是否在房间中
+    inRoom:function(req_p,ws){
+        let uid = req_p.rawData.uid;
+        let exist_room = this.isInRoom(uid);
+        if(exist_room){
+            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS, roomInfo: exist_room.roomInfo(true)}, ws);
+        }
+        else{
+            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS}, ws);
+        }
+    },
 
     //邀请好友
     inviteFriend:function(req_p,ws){
