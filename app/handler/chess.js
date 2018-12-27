@@ -207,7 +207,13 @@ module.exports = {
             let roomId = CryptoUtil.toBasic(sRoomId, CommonConf['roomId_key']);
             let r = this.rooms[roomId];
             if(r){
-                r.joinRoom(uid);
+                if(r.p2.uid === -1){
+                    r.joinRoom(uid);
+                }
+                else{
+                    Log.error(`joinFriendRoom error room ${roomId} has been join uid ${r.p2.uid}!`);
+                    BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_HAS_BEEN_JOIN},ws);
+                }
             }
             else{
                 Log.error(`joinFriendRoom error room ${roomId} not exist!`);
