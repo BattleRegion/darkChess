@@ -57,40 +57,34 @@ module.exports = {
     //退出房间
     quitRoom: function(req_p, ws) {
         let uid = req_p.rawData.uid;
-        let roomId = req_p.rawData.roomId;
-        let room = this.rooms[roomId];
-        Log.info(`用户 ${uid} 尝试退出房间 ${roomId}`);
+        let room = this.isInRoom(uid);
         if(room){
-            if(room.hasPlayer(uid)){
-                //lose
-                let sql = new Command('update room set state = ? where id = ?',[ROOM_STATE.FORCE_END,roomId]);
-                Executor.query(DBEnv, sql ,(e)=>{
-                    if(!e){
-                        //通知另一个玩家
-                        let res_p = new ResPackage({
-                            handler:'chess',
-                            event:'userForceQuit'
-                        });
-                        let otherPlayer = room.getOtherPlayer(uid);
-                        if(otherPlayer.type === PLAYER_TYPE.USER){
-                            BaseHandler.sendToClient(res_p,room.getOtherPlayer(uid).getWs());
-                        }
-                        BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
-                        this.cleanRoomInfo(roomId);
-                        Log.info(`用户 ${uid} 退出房间 ${roomId} 成功`)
+            let roomId = room.roomId;
+            Log.info(`用户 ${uid} 尝试退出房间 ${roomId}`);
+            //lose
+            let sql = new Command('update room set state = ? where id = ?',[ROOM_STATE.FORCE_END,roomId]);
+            Executor.query(DBEnv, sql ,(e)=>{
+                if(!e){
+                    //通知另一个玩家
+                    let res_p = new ResPackage({
+                        handler:'chess',
+                        event:'userForceQuit'
+                    });
+                    let otherPlayer = room.getOtherPlayer(uid);
+                    if(otherPlayer.type === PLAYER_TYPE.USER){
+                        BaseHandler.sendToClient(res_p,room.getOtherPlayer(uid).getWs());
                     }
-                    else{
-                        Log.error(`quit room db error ${e.toString()}`);
-                    }
-                })
-            }
-            else{
-                Log.error(`quit room ${roomId} no user ${uid}`);
-                BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
-            }
+                    BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
+                    this.cleanRoomInfo(roomId);
+                    Log.info(`用户 ${uid} 退出房间 ${roomId} 成功`)
+                }
+                else{
+                    Log.error(`quit room db error ${e.toString()}`);
+                }
+            })
         }
         else{
-            Log.error(`quit room no room ${roomId}`);
+            Log.error(`quit room no room`);
             BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
         }
     },
