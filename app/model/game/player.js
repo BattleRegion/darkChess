@@ -113,9 +113,9 @@ class Player {
                 else{
                     Log.error(`ai action error ${JSON.stringify(bodyInfo)}`);
                 }
-                if(result){
-                    this.userJump(r)
-                }
+                // if(result){
+                //     this.userJump(r)
+                // }
             }
         });
     }
