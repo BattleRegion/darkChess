@@ -95,7 +95,7 @@ class Player {
                                     let pid = bodyInfo['pid'];
                                     result = r.flipPiece(pid,this.uid);
                                 }
-                                else if(bodyInfo.type === "flip"){
+                                else if(bodyInfo.type === "keep"){
                                     this.userJump(r)
                                 }
                                 else{
