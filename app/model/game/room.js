@@ -358,6 +358,7 @@ class Room {
             handler:'chess',
             event:'friendJoin',
             rawData:{
+                code:GameCode.SUCCESS,
                 uid:uid,
             }
         });
