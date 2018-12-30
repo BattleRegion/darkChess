@@ -95,6 +95,9 @@ class Player {
                                     let pid = bodyInfo['pid'];
                                     result = r.flipPiece(pid,this.uid);
                                 }
+                                else if(bodyInfo.type === "flip"){
+                                    this.userJump(r)
+                                }
                                 else{
                                     Log.error(`ai action error ${JSON.stringify(bodyInfo)}`);
                                 }
