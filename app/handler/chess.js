@@ -85,7 +85,8 @@ module.exports = {
         }
         else{
             Log.error(`quit room no room`);
-            BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
+            BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
+            // BaseHandler.commonResponse(req_p,{code:GameCode.ROOM_NOT_EXIST,msg:'房间不存在，无法退出'},ws);
         }
     },
 
