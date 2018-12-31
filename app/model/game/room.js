@@ -229,8 +229,7 @@ class Room {
                     else{
                         otherPlayer.side = Side.BLACK;
                     }
-                    Log.roomInfo(this.roomId,`user ${uid} flip piece set user side ${player.uid}:${player.side} | 
-                    ${otherPlayer.uid}:${otherPlayer.side}`);
+                    Log.roomInfo(this.roomId,`user ${uid} flip piece set user side ${player.uid}:${player.side} | ${otherPlayer.uid}:${otherPlayer.side}`);
                 }
                 piece.hasFlip = true;
                 this.storeAction('flip',{
