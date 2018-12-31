@@ -237,7 +237,7 @@ class Room {
                 this.storeAction('flip',{
                     uid:uid,
                     piece:piece
-                });
+                },uid);
                 this.updateRoomInfoToDB();
                 let res_p = {
                     handler:'chess',
@@ -279,7 +279,7 @@ class Room {
                         piece:piece,
                         x:x,
                         y:y
-                    });
+                    },uid);
                     let b = this.board.getBlock(x,y);
                     piece.move(b, this.board, false);
                     this.updateRoomInfoToDB();
@@ -304,7 +304,7 @@ class Room {
                         uid:uid,
                         piece:piece,
                         atkPiece:atkBlock.piece
-                    });
+                    },uid);
                     let deadPiece = piece.atk(this.roomId,atkBlock, this.board);
                     let p = this.getPlayerBySide(deadPiece.side);
                     p.curHp = p.curHp - deadPiece.hp;
@@ -347,9 +347,9 @@ class Room {
         }
     }
 
-    storeAction(action,detail){
-        let sql = new Command('insert into action(roomId,round,action,detail,createAt) values(?,?,?,?,?)',
-            [this.roomId,this.round,action,JSON.stringify(detail),~~(new Date().getTime()/1000)]);
+    storeAction(action,detail,uid){
+        let sql = new Command('insert into action(roomId,pc,uid,round,action,detail,createAt) values(?,?,?,?,?,?,?)',
+            [this.roomId,this.pc,uid,this.round,action,JSON.stringify(detail),~~(new Date().getTime()/1000)]);
         Executor.query(DBEnv,sql,(e,r)=>{
             if(e){
                 Log.error(`store action error ${e.toString()}`)

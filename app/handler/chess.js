@@ -104,7 +104,7 @@ module.exports = {
             BaseHandler.commonResponse(req_p, {code:GameCode.SUCCESS},ws);
             room.storeAction("ready",{
                 uid:uid,
-            })
+            },uid)
         }
         else{
             Log.roomInfo(roomId,`user ${uid} ready ${roomId} not legal`);
@@ -165,7 +165,7 @@ module.exports = {
             room.storeAction("actionAniEnd",{
                 uid:uid,
                 round:round
-            });
+            },uid);
             room.swapTurn(uid, end=>{
                 if(end){
                     //game end romove room
