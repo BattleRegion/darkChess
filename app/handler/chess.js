@@ -354,7 +354,9 @@ module.exports = {
     cleanRoomInfo(roomId){
         delete this.rooms[roomId];
         Log.info(`从缓存中清理房间信息 ${roomId} 剩余房间为:`);
-        Log.info(this.rooms)
+        Object.keys(this.rooms).forEach(function(rid){
+            Log.info(rid);
+        });
     },
 
     //force
