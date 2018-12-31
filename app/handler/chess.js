@@ -351,7 +351,8 @@ module.exports = {
     //清除房间
     cleanRoomInfo(roomId){
         delete this.rooms[roomId];
-        Log.info(`从缓存中清理房间信息 ${roomId} 剩余房间为 ${JSON.stringify(this.rooms)}`);
+        Log.info(`从缓存中清理房间信息 ${roomId} 剩余房间为:`);
+        Log.info(this.rooms)
     },
 
     //force
