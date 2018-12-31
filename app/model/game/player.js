@@ -63,7 +63,9 @@ class Player {
             if(go){
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
-                    this.aiDeal(r);
+                    setTimeout(()=>{
+                        this.aiDeal(r);
+                    },3000)
                 }
             }
         }
