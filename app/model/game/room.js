@@ -128,12 +128,14 @@ class Room {
     }
 
     tryBeginGame(){
-        if(this.p1.hasReady && this.p2.hasReady) {
+        if(this.p1.hasReady && this.p2.hasReady && this.roomState === ROOM_STATE.READY) {
+            Log.roomInfo(this.roomId,`双方都准备完毕开始游戏！`);
             this.roomState = ROOM_STATE.ING;
             this.turnUser();
             this.updateRoomInfoToDB(null,this.roomState);
         }
         else{
+            Log.roomInfo(this.roomId,`tryBeginGame error state ${this.roomState} ${this.p1.hasReady} ${this.p2.hasReady}`);
             this.updateRoomInfoToDB();
         }
     }
