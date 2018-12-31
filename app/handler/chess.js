@@ -44,7 +44,8 @@ module.exports = {
         }
         else{
             Log.error(`当前用户不在匹配列表中不需要取消，剩余匹配列表${JSON.stringify(this.matchingUsers)}`);
-            BaseHandler.commonResponse(req_p, {code:GameCode.CANCEL_MATCH_ERROR, msg:'用户不在匹配列表中无法取消'}, ws);
+            // BaseHandler.commonResponse(req_p, {code:GameCode.CANCEL_MATCH_ERROR, msg:'用户不在匹配列表中无法取消'}, ws);
+            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS}, ws);
         }
 
         if(needPC){
