@@ -25,8 +25,8 @@ class Piece  {
     }
 
 
-    canMove(x,y,board){
-        Log.info(`棋子 ${this.name} 尝试移动 x:${x} y:${y}`);
+    canMove(roomId,x,y,board){
+        Log.roomInfo(roomId,`棋子 ${this.name} 尝试移动 x:${x} y:${y}`);
         if(board.inBoardRange(x,y)){
             let px = this.x;
             let py = this.y;
@@ -34,7 +34,7 @@ class Piece  {
             if(this.type !== PTYPE.CANNON){
                 let crossPos = board.getCross(px,py,1);
                 let moveToStr = `${x}_${y}`;
-                Log.info(`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的十字位置 ${JSON.stringify(crossPos)}`);
+                Log.roomInfo(roomId,`当前位置: ${px} ${py},需要移动到 ${x} ${y},可以移动到的十字位置 ${JSON.stringify(crossPos)}`);
                 if(crossPos.includes(moveToStr)){
                     if(!block.piece){
                         return 1;//可以移动
@@ -58,13 +58,13 @@ class Piece  {
                 }
             }
             else{
-                Log.info(`当前行动棋子为cannon 无法移动只能攻击，隔山打牛 当前位置: ${px} ${py},需要移动到 ${x} ${y}`);
+                Log.roomInfo(roomId,`当前行动棋子为cannon 无法移动只能攻击，隔山打牛 当前位置: ${px} ${py},需要移动到 ${x} ${y}`);
                 if(!block.piece){
                     return GameCode.CANNON_CAN_NOT_MOVE;
                 }
                 else{
                     let pieces = this.piecesBetween(block.piece, board);
-                    Log.info(`当中隔着的棋子为${pieces.length} ${JSON.stringify(pieces)}`);
+                    Log.roomInfo(roomId,`当中隔着的棋子为${pieces.length} ${JSON.stringify(pieces)}`);
                     if(pieces.length === 3){
                         return 2;
                     }
@@ -163,17 +163,19 @@ class Piece  {
         return basicInfo;
     }
 
-    atk(atkBlock, board){
+    atk(roomId,atkBlock, board){
         if(this.type === PTYPE.SOLDIER && atkBlock.piece.type === PTYPE.EMPEROR){
             //吃子
             let atkPiece = atkBlock.piece;
             atkPiece.hasDead = true;
             atkBlock.piece = null;
             this.move(atkBlock, board, false);
+            Log.roomInfo(roomId,`兵吃将`);
             return atkPiece;
         }
         else if(this.type === PTYPE.EMPEROR && atkBlock.piece.type === PTYPE.SOLDIER){
             //自杀
+            Log.roomInfo(roomId,`将吃兵自杀`);
             this.hasDead = true;
             let curBlock = board.getBlock(this.x , this.y);
             curBlock.piece = null;

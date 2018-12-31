@@ -60,7 +60,7 @@ module.exports = {
         let room = this.isInRoom(uid);
         if(room){
             let roomId = room.roomId;
-            Log.info(`用户 ${uid} 尝试退出房间 ${roomId}`);
+            Log.roomInfo(roomId,`用户 ${uid} 尝试退出房间 ${roomId}`);
             //lose
             let sql = new Command('update room set state = ? where id = ?',[ROOM_STATE.FORCE_END,roomId]);
             Executor.query(DBEnv, sql ,(e)=>{
@@ -76,10 +76,10 @@ module.exports = {
                     }
                     BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS},ws);
                     this.cleanRoomInfo(roomId);
-                    Log.info(`用户 ${uid} 退出房间 ${roomId} 成功`)
+                    Log.roomInfo(roomId,`用户 ${uid} 退出房间 ${roomId} 成功`)
                 }
                 else{
-                    Log.error(`quit room db error ${e.toString()}`);
+                    Log.roomInfo(roomId,`quit room db error ${e.toString()}`);
                 }
             })
         }
@@ -93,7 +93,7 @@ module.exports = {
     ready: function(req_p, ws){
         let uid = req_p.rawData.uid;
         let roomId = req_p.rawData.roomId;
-        Log.info(`用户准备！${uid} roomId:${roomId}`);
+        Log.roomInfo(roomId,`ready receive ${JSON.stringify(req_p.rawData)}`);
         let room = this.roomActionLegal(uid,roomId);
         if(room){
             let p = room.getPlayer(uid);
@@ -105,7 +105,7 @@ module.exports = {
             })
         }
         else{
-            Log.error(`user ${uid} ready ${roomId} not legal`);
+            Log.roomInfo(roomId,`user ${uid} ready ${roomId} not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },
@@ -115,15 +115,17 @@ module.exports = {
         let uid = req_p.rawData.uid;
         let roomId = req_p.rawData.roomId;
         let pId = req_p.rawData['pId'];
+        Log.roomInfo(roomId,`flip receive ${JSON.stringify(req_p.rawData)}`);
         let room = this.roomActionLegal(uid,roomId);
         if(room && room.roomState === ROOM_STATE.ING){
             let result = room.flipPiece(pId,uid);
             if(result){
+                Log.roomInfo(roomId,`${uid} flip error ${JSON.stringify(result)}`);
                 BaseHandler.commonResponse(req_p,result,ws);
             }
         }
         else{
-            Log.error(`room ${roomId} user ${uid} flip ${pId} not legal`);
+            Log.roomInfo(roomId,`room ${roomId} state ${room.roomState} user ${uid} flip ${pId} not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },
@@ -136,14 +138,16 @@ module.exports = {
         let x = req_p.rawData['x'];
         let y = req_p.rawData['y'];
         let room = this.roomActionLegal(uid,roomId);
+        Log.roomInfo(roomId,`move receive ${JSON.stringify(req_p.rawData)}`);
         if(room && room.roomState === ROOM_STATE.ING){
             let result = room.movePiece(pId, uid, x, y);
             if(result){
+                Log.roomInfo(roomId,`${uid} move error ${JSON.stringify(result)}`);
                 BaseHandler.commonResponse(req_p,result,ws);
             }
         }
         else{
-            Log.error(`room ${roomId} user ${uid} move ${pId} not legal`);
+            Log.roomInfo(roomId,`room ${roomId} state:${room.roomState} user ${uid} move ${pId} not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },
@@ -154,6 +158,7 @@ module.exports = {
         let uid = req_p.rawData.uid;
         let roomId = req_p.rawData.roomId;
         let room = this.roomActionLegal(uid,roomId);
+        Log.roomInfo(roomId,`actionAniEnd receive ${JSON.stringify(req_p.rawData)}`);
         if(room && room.roomState === ROOM_STATE.ING){
             room.storeAction("actionAniEnd",{
                 uid:uid,
@@ -167,7 +172,7 @@ module.exports = {
             });
         }
         else{
-            Log.error(`room ${roomId} user ${uid} actionAniEnd not legal`);
+            Log.roomInfo(roomId,`room ${roomId} state ${room.roomState} user ${uid} actionAniEnd not legal`);
             BaseHandler.commonResponse(req_p, {code:GameCode.ACTION_ROOM_ERROR,msg:`操作不合法！`},ws)
         }
     },
@@ -283,7 +288,7 @@ module.exports = {
                 room.roomId = roomId;
                 this.rooms[roomId] = room;
                 room.updateRoomInfoToDB();
-                Log.info(`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
+                Log.roomInfo(roomId,`创建房间成功！p1:${p1_uid} p2:${p2_uid} roomId :${roomId}`);
                 room.broadcast();
                 cb&&cb(room);
             }
@@ -346,6 +351,7 @@ module.exports = {
     //清除房间
     cleanRoomInfo(roomId){
         delete this.rooms[roomId];
+        Log.info(`从缓存中清理房间信息 ${roomId} 剩余房间为 ${JSON.stringify(this.rooms)}`);
     },
 
     //force

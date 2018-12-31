@@ -61,15 +61,8 @@ class Player {
         }
         else{
             if(go){
-                Log.info(`PC ${this.uid} AI行动`);
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
-                    // if(r.p1.uid === 'oC_No5P5Bah9rb3teBP3cuTOpTHs'){
-                    //
-                    // }
-                    // else{
-                    //     this.userJump(r)
-                    // }
                     this.aiDeal(r);
                 }
             }
@@ -86,34 +79,35 @@ class Player {
             url: aiUrl,
             json: form
         };
-        Log.info(`发送到AI 服务器`);
-        Log.info(JSON.stringify(form));
+        Log.roomInfo(r.roomId,`当前是AI 控制 发送棋盘信息 到AI 服务器`);
         Request.post(postBody,(err,response,body)=>{
             if(err){
-                Log.error(`AI 处理 失败:${err.toString()}`);
+                Log.roomInfo(r.roomId`AI 处理 失败:${err.toString()}`);
             }
             else{
                 let bodyInfo = body;
                 let result = null;
                 if(bodyInfo.type === "move") {
-                    Log.info(`ai move ${JSON.stringify(bodyInfo)}`);
+                    Log.roomInfo(r.roomId,`ai move ${JSON.stringify(bodyInfo)}`);
                     let pid = bodyInfo['pid'];
                     let x = bodyInfo['x'];
                     let y = bodyInfo['y'];
                     result = r.movePiece(pid, this.uid, x, y);
                 }
                 else if(bodyInfo.type === "flip"){
-                    Log.info(`ai flip ${JSON.stringify(bodyInfo)}`);
+                    Log.roomInfo(r.roomId,`ai flip ${JSON.stringify(bodyInfo)}`);
                     let pid = bodyInfo['pid'];
                     result = r.flipPiece(pid,this.uid);
                 }
                 else if(bodyInfo.type === "keep"){
+                    Log.roomInfo(r.roomId,`ai jump ${JSON.stringify(bodyInfo)}`);
                     this.userJump(r)
                 }
                 else{
-                    Log.error(`ai action error ${JSON.stringify(bodyInfo)}`);
+                    Log.roomInfo(r.roomId,`ai action error ${JSON.stringify(bodyInfo)}`);
                 }
                 if(result){
+                    Log.roomInfo(r.roomId,`ai action error ${JSON.stringify(result)}`);
                     this.userJump(r)
                 }
             }

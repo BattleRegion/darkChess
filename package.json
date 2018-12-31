@@ -5,6 +5,8 @@
   "main": "app.js",
   "dependencies": {
     "dataAccess": "^0.1.7",
+    "log4js": "^3.0.6",
+    "moment": "^2.23.0",
     "request": "^2.88.0",
     "ws": "^6.1.2"
   },

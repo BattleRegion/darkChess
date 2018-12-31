@@ -91,8 +91,9 @@ class Room {
             sql = new Command('update room set info = ?,state = ? where id = ?',[JSON.stringify(this.roomInfo(false)),state, this.roomId]);
         }
         Executor.query(DBEnv, sql, (e)=>{
+            Log.roomInfo(this.roomId,`更新房间信息到db..`);
             if(e){
-                Log.error(`updateRoomInfoToDB error :${e.toString()}`);
+                Log.roomInfo(this.roomId,`updateRoomInfoToDB error :${e.toString()}`);
             }
             cb&&cb();
         });
@@ -138,16 +139,17 @@ class Room {
     }
 
     swapTurn(uid, cb){
-        Log.info(`swapTurn ${uid}`);
+        Log.roomInfo(this.roomId,`用户完成操作 swapTurn ${uid}`);
         let p = this.getPlayer(uid);
         p.animEnd = true;
         let otherP = this.getOtherPlayer(uid);
         if(otherP.type === PLAYER_TYPE.PC){
             otherP.animEnd = true;
-            Log.info(`另外一个是PC 不用播放动画`);
+            Log.roomInfo(this.roomId,`另外一个对手是PC 不用播放动画，强行结束`);
         }
+        Log.roomInfo(this.roomId,`当前动画情况 ${p.uid}:${p.animEnd} | ${otherP.uid}:${otherP.animEnd}`);
         if(p.animEnd && otherP.animEnd){
-            Log.info(`双方动画都结束，进入下一轮`);
+            Log.roomInfo(this.roomId,`双方动画都结束，进入下一轮`);
             if(this.curTurn === 0){
                 this.curTurn = 1;
             }
@@ -156,6 +158,7 @@ class Room {
             }
 
             if(this.p1.curHp <=0 || this.p2.curHp <=0){
+                Log.roomInfo(this.roomId,`有人hp <=0 尝试结束战斗 ${this.p1.curHp} ${this.p2.curHp}`);
                 this.roomEnd(cb);
             }
             else{
@@ -179,13 +182,14 @@ class Room {
                     winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
                 }
             };
+            Log.roomInfo(this.roomId,`战斗结束通知客户端 winSide:${this.p1.curHp <= 0? this.p2.side:this.p1.side}`);
             this.broadcastSend(res_p);
             cb(true);
         },ROOM_STATE.END);
     }
 
     turnUser(){
-        Log.info(`turnUser ${this.roomId}`);
+        Log.roomInfo(this.roomId,`切换行动回合 当前 turn:${this.curTurn} round:${this.round}`);
         if(this.curTurn===0){
             this.p1.turn(true,this.round);
             this.p2.turn(false,this.round);
@@ -194,17 +198,20 @@ class Room {
             this.p1.turn(false,this.round);
             this.p2.turn(true,this.round);
         }
-        this.round = this.round + 1
+        this.round = this.round + 1;
+        Log.roomInfo(this.roomId,`切换行动回合 切换后 turn:${this.curTurn} round:${this.round}`);
     }
 
     canTurn(player){
         if(player === this.p1 && this.curTurn === 0 && !this.p1.timeoutLock){
+            Log.roomInfo(this.roomId,`当前是p1 ${player.uid} 的行动回合`);
             return true;
         }
         if(player === this.p2 && this.curTurn === 1 && !this.p1.timeoutLock){
+            Log.roomInfo(this.roomId,`当前是p2 ${player.uid} 的行动回合`);
             return true;
         }
-        Log.error(`当前并不是${player.uid}的回合，不能行动！`);
+        Log.roomInfo(this.roomId,`当前并不是${player.uid}的回合，不能行动！`);
         return false;
     }
 
@@ -222,6 +229,8 @@ class Room {
                     else{
                         otherPlayer.side = Side.BLACK;
                     }
+                    Log.roomInfo(this.roomId,`user ${uid} flip piece set user side ${player.uid}:${player.side} | 
+                    ${otherPlayer.uid}:${otherPlayer.side}`);
                 }
                 piece.hasFlip = true;
                 this.storeAction('flip',{
@@ -237,16 +246,19 @@ class Room {
                         piece:piece.clientInfo()
                     }
                 };
+                Log.roomInfo(this.roomId,`user ${uid} flip piece success ${JSON.stringify(piece.clientInfo())}`);
                 this.broadcastSend(res_p);
                 return null;
             }
             else{
+                Log.roomInfo(this.roomId,`user ${uid} flip piece pid ${pId} null`);
                 return {
                     code : GameCode.PIECE_NOT_FIND
                 }
             }
         }
         else{
+            Log.roomInfo(this.roomId,`user ${uid} flip piece error not turn`);
             return {
                 code : GameCode.NOT_YOUR_TURN
             }
@@ -258,9 +270,9 @@ class Room {
         if(this.canTurn(player)){
             let piece = this.board.findPiece(pId);
             if(piece && piece.side === player.side && piece.hasFlip){
-                let moveResult = piece.canMove(x,y,this.board);
+                let moveResult = piece.canMove(this.roomId,x,y,this.board);
                 if(moveResult === 1){
-                    Log.info(`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
+                    Log.roomInfo(this.roomId,`${JSON.stringify(piece)} 移动到 ${x} ${y}`);
                     this.storeAction('move',{
                         uid:uid,
                         piece:piece,
@@ -286,16 +298,16 @@ class Room {
                 }
                 else if(moveResult === 2){
                     let atkBlock = this.board.getBlock(x, y);
-                    Log.info(`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
+                    Log.roomInfo(this.roomId,`${JSON.stringify(piece)} 攻击 ${JSON.stringify(atkBlock.piece)}`);
                     this.storeAction('atk',{
                         uid:uid,
                         piece:piece,
                         atkPiece:atkBlock.piece
                     });
-                    let deadPiece = piece.atk(atkBlock, this.board);
+                    let deadPiece = piece.atk(this.roomId,atkBlock, this.board);
                     let p = this.getPlayerBySide(deadPiece.side);
                     p.curHp = p.curHp - deadPiece.hp;
-                    Log.info(`攻击后死亡的棋子为:${JSON.stringify(deadPiece)} 受伤的玩家为 ${JSON.stringify(p.playerInfo())}`);
+                    Log.roomInfo(this.roomId,`攻击后死亡的棋子为:${JSON.stringify(deadPiece)} 受伤的玩家为 ${JSON.stringify(p.playerInfo())}`);
                     this.updateRoomInfoToDB();
                     let res_p =  {
                         handler:'chess',
@@ -321,7 +333,7 @@ class Room {
                 }
             }
             else{
-                Log.error(`尝试移动一个不属于自己的颜色 ${player.side} ${piece?piece.side:'piece null'} roomId ${this.roomId} hasFlip ${piece?piece.hasFlip:'piece null'}`);
+                Log.roomInfo(this.roomId,`尝试移动一个不属于自己的颜色 ${player.side} ${piece?piece.side:'piece null'} roomId ${this.roomId} hasFlip ${piece?piece.hasFlip:'piece null'}`);
                 return {
                     code: GameCode.MOVE_ILLEGAL
                 }
