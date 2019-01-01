@@ -208,6 +208,7 @@ module.exports = {
         let uid = req_p.rawData.uid;
         let exist_room = this.isInRoom(uid);
         if(exist_room){
+            Log.roomInfo(exist_room.roomId,`recoverReady ${uid} ${exist_room.roomId}`);
             let round  = exist_room.round;
             let sql = new Command('select * from action where roomId = ? and round = ? order by id desc',
                 [exist_room.roomId,round]);
@@ -226,7 +227,7 @@ module.exports = {
                             hasNotifyEnd = true;
                         }
                     }
-
+                    Log.roomInfo(exist_room.roomId,`recoverReady hasAction ${hasAction} hasNotifyEnd ${hasNotifyEnd}`);
                     if(hasAction && !hasNotifyEnd){
                         //设置恢复用户 end
                         exist_room.storeAction("actionAniEnd",{
