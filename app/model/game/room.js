@@ -51,6 +51,8 @@ class Room {
 
         this.board = new Board(true);
         this.board.setDBInfo(boardInfo.board)
+
+        console.log(this.round);
     }
 
     roomInfo(client){
