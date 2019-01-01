@@ -191,20 +191,61 @@ module.exports = {
         }
     },
 
+    //恢复房间
     recoverRoom:function(req_p,ws){
         let uid = req_p.rawData.uid;
         let exist_room = this.isInRoom(uid);
         if(exist_room){
-            let sql = new Command('select * from action where roomId = ? order by id desc',[exist_room.roomId]);
-            Executor.query(DBEnv, sql, (e,r)=>{
-                if(!e){
-                    console.log(r);
+            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS, roomInfo: exist_room.roomInfo(true)}, ws);
+        }
+        else{
+            BaseHandler.commonResponse(req_p, {code: GameCode.ROOM_NOT_EXIST}, ws);
+        }
+    },
+
+    //recover ready
+    recoverReady:function(req_p,ws){
+        let uid = req_p.rawData.uid;
+        let exist_room = this.isInRoom(uid);
+        if(exist_room){
+            let round  = exist_room.round;
+            let sql = new Command('select * from action where roomId = ? and round = ? order by id desc',
+                [exist_room.roomId,round]);
+            Executor.query(DBEnv, sql, (e,r)=> {
+                if (!e) {
+                    let hasAction = false;
+                    let hasNotifyEnd = false;
+                    for(let i = 0;i<r.length;i++){
+                        let act = r[i];
+                        if(act['action'] === "flip" || act['action'] === "move" ||
+                            act["action"] === "atk"){
+                            hasAction = true;break;
+                        }
+
+                        if(act['uid'] === uid && act['action'] === 'actionAniE'){
+                            hasNotifyEnd = true;
+                        }
+                    }
+
+                    if(hasAction && !hasNotifyEnd){
+                        //设置恢复用户 end
+                        exist_room.storeAction("actionAniEnd",{
+                            uid:uid,
+                            round:round
+                        },uid);
+                        exist_room.swapTurn(uid, end=>{
+                            if(end){
+                                //game end remove room
+                                this.cleanRoomInfo(exist_room.roomId);
+                            }
+                        });
+                    }
                 }
-                else{
+                else {
                     Log.roomInfo(exist_room.roomId,`recover room error : ${e.toString()}`);
+                    BaseHandler.commonResponse(req_p, {code: GameCode.RECOVER_ROOM_ERROR}, ws);
                 }
-            });
-            // BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS, roomInfo: exist_room.roomInfo(true)}, ws);
+            })
         }
         else{
             BaseHandler.commonResponse(req_p, {code: GameCode.ROOM_NOT_EXIST}, ws);
