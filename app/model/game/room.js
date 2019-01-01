@@ -36,7 +36,7 @@ class Room {
         this.roomState = infoObj.state;
         this.pc = infoObj.pc === 1;
         this.createAt = infoObj['createAt'];
-        this.round = infoObj.round?infoObj.round:0;
+        this.round = boardInfo.round?boardInfo.round:0;
         this.curTurn = boardInfo.curTurn?boardInfo.curTurn:0;
 
         this.p1 = new Player(infoObj['p1_uid'], PLAYER_TYPE.USER);
@@ -52,7 +52,6 @@ class Room {
         this.board = new Board(true);
         this.board.setDBInfo(boardInfo.board)
 
-        console.log(this.round);
     }
 
     roomInfo(client){
