@@ -24,7 +24,9 @@ module.exports = {
                             if(result !== true){
                                 req_p.rawData.uid = result.toString();
                             }
-                            Log.info(`尝试处理数据包 ${handlerName} ${event} ${JSON.stringify(req_p.rawData)}`);
+                            if(handlerName !== "sys" && event !== "heartbreak"){
+                                Log.info(`尝试处理数据包 ${handlerName} ${event} ${JSON.stringify(req_p.rawData)}`);
+                            }
                             handler[event](req_p, ws);
                         }
                         else{
@@ -47,7 +49,9 @@ module.exports = {
 
     sendToClient: function(resPackage, ws){
         if(ws && ws.readyState === WebSocket.OPEN) {
-            Log.info(`发送消息到客户端 ${ws.realAddress} 消息内容 : ${JSON.stringify(resPackage)}`);
+            if(resPackage.handler !== "sys" && resPackage.event !== "heartbreak"){
+                Log.info(`发送消息到客户端 ${ws.realAddress} 消息内容 : ${JSON.stringify(resPackage)}`);
+            }
             ws.send(JSON.stringify(resPackage));
         }
         else{
