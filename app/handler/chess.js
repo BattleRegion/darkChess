@@ -357,22 +357,25 @@ module.exports = {
             this.realCreateRoom(p1_uid, p2_uid, pc, cb);
         }
         else {
-            let curDate = ~~(new Date().getTime()/1000);
-            let roomCreateAt = ~~(exist_room.createAt);
-            let timeoutDis = 60 * 30;
-            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId} 当前时间${curDate} 房间创建时间 ${roomCreateAt}`);
-            if(curDate - roomCreateAt >= timeoutDis){
-                //todo
-                Log.info(`房间超时，创建新的房间`);
-                exist_room.updateRoomInfoToDB(()=>{
-                    this.cleanRoomInfo(exist_room.roomId);
-                    this.realCreateRoom(p1_uid, p2_uid, pc, cb);
-                },ROOM_STATE.END);
-            }
-            else{
-                //todo 通知用户房间信息
-                exist_room.broadcast();
-            }
+            //todo 通知用户房间信息
+            Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId}`);
+            exist_room.broadcast();
+            // let curDate = ~~(new Date().getTime()/1000);
+            // let roomCreateAt = ~~(exist_room.createAt);
+            // let timeoutDis = 60 * 30;
+            // Log.error(`用户 ${p1_uid} 存在未结束的房间 room: ${exist_room.roomId} 当前时间${curDate} 房间创建时间 ${roomCreateAt}`);
+            // if(curDate - roomCreateAt >= timeoutDis){
+            //     //todo
+            //     Log.info(`房间超时，创建新的房间`);
+            //     exist_room.updateRoomInfoToDB(()=>{
+            //         this.cleanRoomInfo(exist_room.roomId);
+            //         this.realCreateRoom(p1_uid, p2_uid, pc, cb);
+            //     },ROOM_STATE.END);
+            // }
+            // else{
+            //     //todo 通知用户房间信息
+            //     exist_room.broadcast();
+            // }
         }
     },
 
