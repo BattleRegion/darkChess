@@ -208,8 +208,8 @@ module.exports = {
         let uid = req_p.rawData.uid;
         let exist_room = this.isInRoom(uid);
         if(exist_room){
-            Log.roomInfo(exist_room.roomId,`recoverReady ${uid} ${exist_room.roomId}`);
             let round  = exist_room.round;
+            Log.roomInfo(exist_room.roomId,`recoverReady ${uid} roomId ${exist_room.roomId} round ${round}`);
             let sql = new Command('select * from action where roomId = ? and round = ? order by id desc',
                 [exist_room.roomId,round]);
             Executor.query(DBEnv, sql, (e,r)=> {
