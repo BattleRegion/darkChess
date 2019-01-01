@@ -195,7 +195,16 @@ module.exports = {
         let uid = req_p.rawData.uid;
         let exist_room = this.isInRoom(uid);
         if(exist_room){
-            BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS, roomInfo: exist_room.roomInfo(true)}, ws);
+            let sql = new Command('select * from action where roomId = ? order by id desc',[exist_room.roomId]);
+            Executor.query(DBEnv, sql, (e,r)=>{
+                if(!e){
+                    console.log(r);
+                }
+                else{
+                    Log.roomInfo(exist_room.roomId,`recover room error : ${e.toString()}`);
+                }
+            });
+            // BaseHandler.commonResponse(req_p, {code: GameCode.SUCCESS, roomInfo: exist_room.roomInfo(true)}, ws);
         }
         else{
             BaseHandler.commonResponse(req_p, {code: GameCode.ROOM_NOT_EXIST}, ws);
