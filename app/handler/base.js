@@ -13,7 +13,9 @@ module.exports = {
     parseReqPackage: function(data, ws) {
         let req_p = new RequestPackage(data);
         if(req_p['legal']){
-            Log.info(`服务器收到正确数据包 : ${JSON.stringify(req_p)}`);
+            if(req_p.handler !== "sys" && req_p.event !== "heartbreak"){
+                Log.info(`服务器收到正确数据包 : ${JSON.stringify(req_p)}`);
+            }
             let handlerName = req_p.handler;
             try {
                 let event = req_p.event;
