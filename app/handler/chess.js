@@ -216,6 +216,7 @@ module.exports = {
                 if (!e) {
                     let hasAction = false;
                     let hasNotifyEnd = false;
+                    Log.roomInfo(exist_room.roomId,`room action ${JSON.stringify(r)}`);
                     for(let i = 0;i<r.length;i++){
                         let act = r[i];
                         if(act['action'] === "flip" || act['action'] === "move" ||
