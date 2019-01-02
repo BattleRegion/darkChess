@@ -308,8 +308,10 @@ class Room {
                     },uid);
                     let deadPiece = piece.atk(this.roomId,atkBlock, this.board);
                     let p = this.getPlayerBySide(deadPiece.side);
+                    Log.roomInfo(this.roomId,`攻击前双方 p1:${this.p1.curHp} p2:${this.p2.curHp}`);
                     p.curHp = p.curHp - deadPiece.hp;
                     Log.roomInfo(this.roomId,`攻击后死亡的棋子为:${JSON.stringify(deadPiece)} 受伤的玩家为 ${JSON.stringify(p.playerInfo())}`);
+                    Log.roomInfo(this.roomId,`攻击后双方 p1:${this.p1.curHp} p2:${this.p2.curHp}`);
                     this.updateRoomInfoToDB();
                     let res_p =  {
                         handler:'chess',
