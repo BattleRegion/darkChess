@@ -364,7 +364,7 @@ class Room {
         info.code = GameCode.SUCCESS;
         let res_p = new ResPackage({
             handler:'chess',
-            event:'roomInfo',
+            event:'joinFriendRoom',
             rawData:info
         });
 
