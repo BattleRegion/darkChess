@@ -67,11 +67,23 @@ module.exports = {
             Executor.query(DBEnv, sql ,(e)=>{
                 if(!e){
                     //通知另一个玩家
-                    let res_p = new ResPackage({
-                        handler:'chess',
-                        event:'userForceQuit'
-                    });
+
                     let otherPlayer = room.getOtherPlayer(uid);
+
+                    // let res_p = new ResPackage({
+                    //     handler:'chess',
+                    //     event:'userForceQuit'
+                    // });
+
+                    let res_p = {
+                        handler:'chess',
+                        event:'roomEnd',
+                        rawData: {
+                            code:GameCode.SUCCESS,
+                            winSide: otherPlayer.side
+                        }
+                    };
+
                     if(otherPlayer.type === PLAYER_TYPE.USER){
                         BaseHandler.sendToClient(res_p,room.getOtherPlayer(uid).getWs());
                     }
