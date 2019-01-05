@@ -2,13 +2,15 @@ const Side = require('./side');
 const PLAYER_TYPE = require('./playerType');
 const ResPackage = require('../../model/net/resPackage');
 const Request = require('request');
+const BasicHp = 30;
 class Player {
     constructor(uid, type) {
         this.uid = uid;
         this.type = type;
         this.hasReady = this.type !== PLAYER_TYPE.USER;
         this.side = Side.UNDEFINED;
-        this.curHp = 60;
+        this.basicHp = BasicHp;
+        this.curHp = this.basicHp;
         this.animEnd = false;
         this.chess = null;
         this.timer = null;
@@ -22,6 +24,7 @@ class Player {
             hasReady:this.hasReady,
             side:this.side,
             curHp:this.curHp,
+            basicHp:this.basicHp,
             animEnd:this.animEnd
         }
     }
