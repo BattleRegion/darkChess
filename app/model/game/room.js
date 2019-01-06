@@ -7,7 +7,8 @@ const ResPackage = require('../net/resPackage');
 const DataAccess = require('dataAccess');
 const Executor = DataAccess.executor;
 const Command = DataAccess.command;
-
+const ROUNDMAX = 15;
+const AUTODESHP = 1;
 class Room {
 
     constructor(p1, p2, pc, delaySet){
@@ -141,6 +142,15 @@ class Room {
         }
     }
 
+    checkRoundLimit(){
+        Log.roomInfo(this.roomId,`checkRoundLimit ${this.round} ${ROUNDMAX}`);
+        if(this.round > ROUNDMAX){
+            this.p1.curHp = this.p1.curHp - AUTODESHP;
+            this.p2.curHp = this.p2.curHp - AUTODESHP;
+            Log.roomInfo(this.roomId,`reduce hp ${AUTODESHP}`);
+        }
+    }
+
     swapTurn(uid, cb){
         Log.roomInfo(this.roomId,`用户完成操作 swapTurn ${uid}`);
         let p = this.getPlayer(uid);
@@ -153,6 +163,7 @@ class Room {
         Log.roomInfo(this.roomId,`当前动画情况 ${p.uid}:${p.animEnd} | ${otherP.uid}:${otherP.animEnd}`);
         if(p.animEnd && otherP.animEnd){
             Log.roomInfo(this.roomId,`双方动画都结束，进入下一轮`);
+            this.checkRoundLimit();
             if(this.curTurn === 0){
                 this.curTurn = 1;
             }
@@ -193,6 +204,8 @@ class Room {
 
     turnUser(){
         Log.roomInfo(this.roomId,`切换行动回合 当前 turn:${this.curTurn} round:${this.round}`);
+        //加入 n 回合后自动扣血机制
+
         if(this.curTurn===0){
             this.p1.turn(true,this.round);
             this.p2.turn(false,this.round);
