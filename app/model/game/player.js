@@ -3,6 +3,8 @@ const PLAYER_TYPE = require('./playerType');
 const ResPackage = require('../../model/net/resPackage');
 const Request = require('request');
 const BasicHp = 30;
+const ROUNDMAX = 15;
+const AUTODESHP = 1;
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -29,24 +31,14 @@ class Player {
         }
     }
 
-    beginTimer(){
-        this.clearTimer();
-        const timeout = 1500;
-        this.timer = setTimeout(()=>{
-            this.clearTimer();
-            this.timeoutLock = true;
-            Log.info(`用户 ${this.uid}操作 ${timeout} 超时`);
-            this.chess.forceTurnUser(this.uid);
-        },timeout)
-    }
-
-    clearTimer(){
-        this.timer&&clearTimeout(this.timer);
-        this.timer = null;
-    }
-
     turn(go, round){
         this.animEnd = false;
+        let roundLimit = false;
+        if(go && round > ROUNDMAX){
+            this.curHp = this.curHp - AUTODESHP;
+            roundLimit = true
+        }
+
         if(this.type === PLAYER_TYPE.USER){
             let res_p = new ResPackage({
                 handler:"chess",
@@ -55,7 +47,10 @@ class Player {
                     code:GameCode.SUCCESS,
                     side:this.side,
                     round:round,
-                    lock:!go
+                    lock:!go,
+                    roundLimit:roundLimit,
+                    curHp:this.curHp,
+                    roundReduceHp : AUTODESHP
                 }
             });
             this.timeoutLock = false;

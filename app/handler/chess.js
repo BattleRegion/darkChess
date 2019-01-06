@@ -425,13 +425,4 @@ module.exports = {
             Log.info(rid);
         });
     },
-
-    //force
-    forceTurnUser(uid){
-        let exist_room = this.isInRoom(uid);
-        if(exist_room){
-            Log.info(`force turn user ${exist_room.roomId} ${uid}`)
-            exist_room.turnUser();
-        }
-    }
 };
