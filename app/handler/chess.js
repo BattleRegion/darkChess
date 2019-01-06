@@ -302,6 +302,34 @@ module.exports = {
         }
     },
 
+    //和好友再来一局
+    restartByFriend:function(req_p,ws){
+        let uid = req_p.rawData.uid;
+        let fuid = req_p.rawData.fuid;
+        let uRoom = this.isInRoom(uid);
+        let fRoom = this.isInRoom(fuid);
+        if(!uRoom && !fRoom){
+            this.createRoom(uid, -1, false, room =>{
+                let rId = CryptoUtil.toSecret(room.roomId, CommonConf['roomId_key']);
+                BaseHandler.commonResponse(req_p,{code:GameCode.SUCCESS,roomId:rId},ws);
+
+                let res_p =  {
+                    handler:'chess',
+                    event:'restartFromFriend',
+                    rawData:{
+                        code:GameCode.SUCCESS,
+                        roomId:rId
+                    }
+                };
+                let fWs = ServerManager.getWsByUid(fuid);
+                BaseHandler.sendToClient(res_p, fWs);
+            });
+        }
+        else{
+            BaseHandler.commonResponse(req_p,{code:GameCode.USER_HAS_IN_ONE_ROOM},ws);
+        }
+    },
+
     // ------------分割线----------
 
     //从数据库初始化当前房间
