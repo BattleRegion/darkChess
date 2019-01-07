@@ -208,11 +208,11 @@ class Room {
     }
 
     canTurn(player){
-        if(player === this.p1 && this.curTurn === 0 && !this.p1.timeoutLock){
+        if(player === this.p1 && this.curTurn === 0){
             Log.roomInfo(this.roomId,`当前是p1 ${player.uid} 的行动回合`);
             return true;
         }
-        if(player === this.p2 && this.curTurn === 1 && !this.p1.timeoutLock){
+        if(player === this.p2 && this.curTurn === 1){
             Log.roomInfo(this.roomId,`当前是p2 ${player.uid} 的行动回合`);
             return true;
         }
@@ -223,6 +223,7 @@ class Room {
     flipPiece(pId,uid){
         let player = this.getPlayer(uid);
         if(this.canTurn(player)){
+            player.cleanActionTimeCheck();
             let piece = this.board.findPiece(pId);
             if(piece){
                 if(player.side === Side.UNDEFINED){
@@ -272,6 +273,7 @@ class Room {
     movePiece(pId,uid,x,y){
         let player = this.getPlayer(uid);
         if(this.canTurn(player)){
+            player.cleanActionTimeCheck();
             let piece = this.board.findPiece(pId);
             if(piece && piece.side === player.side && piece.hasFlip){
                 let moveResult = piece.canMove(this.roomId,x,y,this.board);

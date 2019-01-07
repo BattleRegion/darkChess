@@ -5,6 +5,7 @@ const Request = require('request');
 const BasicHp = 30;
 const ROUNDMAX = 15;
 const AUTODESHP = 1;
+const ActionTime = 15;
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -16,7 +17,6 @@ class Player {
         this.animEnd = false;
         this.chess = null;
         this.timer = null;
-        this.timeoutLock = false;
     }
 
     playerInfo(){
@@ -40,6 +40,7 @@ class Player {
         }
 
         if(this.type === PLAYER_TYPE.USER){
+            this.actionTimeCheck();
             let res_p = new ResPackage({
                 handler:"chess",
                 event:"turn",
@@ -53,20 +54,32 @@ class Player {
                     roundReduceHp : AUTODESHP
                 }
             });
-            this.timeoutLock = false;
             BaseHandler.sendToClient(res_p,this.getWs());
-            // this.beginTimer();
         }
         else{
             if(go){
+                let randTime =(Math.floor(Math.random()*3) + 1) * 1000;
                 let r = this.chess.isInRoom(this.uid);
                 if(r){
                     setTimeout(()=>{
                         this.aiDeal(r);
-                    },3000)
+                    },randTime)
                 }
             }
         }
+    }
+
+    cleanActionTimeCheck(){
+        this.timer&&clearTimeout(this.timer);
+    }
+
+    actionTimeCheck(){
+        this.cleanActionTimeCheck();
+        this.timer = setTimeout(()=>{
+            let r = this.chess.isInRoom(this.uid);
+            Log.roomInfo(r.roomId, `${this.uid} 超时 自动跳过！`);
+            this.userJump(r);
+        },ActionTime)
     }
 
     aiDeal(r){
