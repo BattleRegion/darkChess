@@ -130,6 +130,80 @@
 //     param.crc = crc;
 //     ws.send(JSON.stringify(param));
 // }
-const log = require('./util/log');
+// const log = require('./util/log');
+//
+// log.roomInfo(1,"测试");
 
-log.roomInfo(1,"测试");
+const DataAccess = require('dataAccess');
+DataAccess.setPoolConfig(require('./conf/mysql'));
+const Command = DataAccess.command;
+const Executor = DataAccess.executor;
+const PlayerType = require('./app/model/game/playerType');
+
+function calculate_ELO(win,lose,pc,cb){
+    let basicScore = 1000;
+    let k = 50;
+    if(pc){
+        let eloOff = 10;
+        let playerUid = win.uid;
+        if(win.type === PlayerType.PC){
+            eloOff = -10;
+            playerUid = lose.uid;
+        }
+        let sql = new Command('select elo from rank where id = ?',[playerUid]);
+        Executor.query("local",sql,(e,r)=>{
+            if(!e){
+                let sql1 = new Command('update rank set elo = elo + ? where id = ?',[eloOff, playerUid]);
+                if(r.length === 0){
+                    sql1 = new Command('insert into rank(id, elo) values(?,?)',[playerUid, basicScore + eloOff]);
+                }
+                Executor.query('local', sql1, cb)
+            }
+            else{
+                cb(e, {})
+            }
+        })
+    }
+    else{
+        let sql = new Command('select elo from rank where id = ?',[winPlayer.uid]);
+        let sql1 = new Command('select elo from rank where id = ?',[losePlayer.uid]);
+        let sqls = [sql,sql1];
+
+        Executor.transaction("local",sqls,(e,r)=>{
+            if(!e){
+                let RA = r[0]&&r[0][0]?r[0][0]['elo']:basicScore; //win
+                let RB = r[1]&&r[1][0]?r[1][0]['elo']:basicScore;//lose
+
+                let EA = 1/(1 + Math.pow(10, (RB - RA)/400));
+                let EB = 1/(1 + Math.pow(10, (RA - RB)/400));
+
+                let WINSA = 1;
+                let LOSESA = 0;
+
+                let RA1 = RA + k * (WINSA - EA);
+                let RB1 = RB + k * (LOSESA - EB);
+                console.log(`winPlayer RA :${RA} SA ${WINSA} EA ${EA} RA1 ${RA1}`);
+                console.log(`losePlayer RB :${RB} RB ${LOSESA} EB ${EB} RB1 ${RB1}`);
+
+                let winSql = new Command('replace rank(id, elo) values(?,?)',[winPlayer.uid, RA1]);
+                let loseSql = new Command('replace rank(id, elo) values(?,?)',[losePlayer.uid, RB1]);
+                Executor.transaction('local',[winSql,loseSql],cb);
+            }
+        })
+    }
+}
+
+let winPlayer = {
+    uid:1,
+    type:PlayerType.USER
+};
+
+let losePlayer = {
+    uid:2,
+    type:PlayerType.USER
+};
+
+calculate_ELO(losePlayer, winPlayer, false, (e,r)=>{
+    console.log(e);
+    console.log(r);
+});

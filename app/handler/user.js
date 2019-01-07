@@ -50,5 +50,10 @@ module.exports = {
         Executor.redisSet(DBEnv, RedisPrefix['USER_TOKEN'] + ":" + uid, token, (e)=>{
             callback(e, token);
         });
-    }
+    },
+
+    rank: function(req_p, ws){
+        let uid = req_p.rawData.uid;
+
+    },
 };

@@ -176,19 +176,79 @@ class Room {
     }
 
     roomEnd(cb){
-        this.updateRoomInfoToDB(()=>{
-            let res_p = {
-                handler:'chess',
-                event:'roomEnd',
-                rawData: {
-                    code:GameCode.SUCCESS,
-                    winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
+        let winPlayer = this.p1.curHp <= 0? this.p2:this.p1;
+        let losePlayer = this.p1.curHp <= 0? this.p1:this.p2;
+        this.calculate_ELO(winPlayer,losePlayer,(e)=>{
+            if(e){
+                Log.roomInfo(this.roomId,`roomend caculate elo error ${e.toString()}`);
+            }
+            this.updateRoomInfoToDB(()=>{
+                let res_p = {
+                    handler:'chess',
+                    event:'roomEnd',
+                    rawData: {
+                        code:GameCode.SUCCESS,
+                        winSide: this.p1.curHp <= 0? this.p2.side:this.p1.side
+                    }
+                };
+                Log.roomInfo(this.roomId,`战斗结束通知客户端 winSide:${this.p1.curHp <= 0? this.p2.side:this.p1.side}`);
+                this.broadcastSend(res_p);
+                cb(true);
+            },ROOM_STATE.END);
+        });
+    }
+
+    calculate_ELO(win,lose,pc,cb){
+        let basicScore = 1000;
+        let k = 50;
+        if(pc){
+            let eloOff = 10;
+            let playerUid = win.uid;
+            if(win.type === PLAYER_TYPE.PC){
+                eloOff = -10;
+                playerUid = lose.uid;
+            }
+            let sql = new Command('select elo from rank where id = ?',[playerUid]);
+            Executor.query("local",sql,(e,r)=>{
+                if(!e){
+                    let sql1 = new Command('update rank set elo = elo + ? where id = ?',[eloOff, playerUid]);
+                    if(r.length === 0){
+                        sql1 = new Command('insert into rank(id, elo) values(?,?)',[playerUid, basicScore + eloOff]);
+                    }
+                    Executor.query('local', sql1, cb)
                 }
-            };
-            Log.roomInfo(this.roomId,`战斗结束通知客户端 winSide:${this.p1.curHp <= 0? this.p2.side:this.p1.side}`);
-            this.broadcastSend(res_p);
-            cb(true);
-        },ROOM_STATE.END);
+                else{
+                    cb(e, {})
+                }
+            })
+        }
+        else{
+            let sql = new Command('select elo from rank where id = ?',[win.uid]);
+            let sql1 = new Command('select elo from rank where id = ?',[lose.uid]);
+            let sqls = [sql,sql1];
+
+            Executor.transaction("local",sqls,(e,r)=>{
+                if(!e){
+                    let RA = r[0]&&r[0][0]?r[0][0]['elo']:basicScore; //win
+                    let RB = r[1]&&r[1][0]?r[1][0]['elo']:basicScore;//lose
+
+                    let EA = 1/(1 + Math.pow(10, (RB - RA)/400));
+                    let EB = 1/(1 + Math.pow(10, (RA - RB)/400));
+
+                    let WINSA = 1;
+                    let LOSESA = 0;
+
+                    let RA1 = RA + k * (WINSA - EA);
+                    let RB1 = RB + k * (LOSESA - EB);
+                    Log.roomInfo(this.roomId,`winPlayer RA :${RA} SA ${WINSA} EA ${EA} RA1 ${RA1}`);
+                    Log.roomInfo(this.roomId,`losePlayer RB :${RB} RB ${LOSESA} EB ${EB} RB1 ${RB1}`);
+
+                    let winSql = new Command('replace rank(id, elo) values(?,?)',[win.uid, RA1]);
+                    let loseSql = new Command('replace rank(id, elo) values(?,?)',[lose.uid, RB1]);
+                    Executor.transaction('local',[winSql,loseSql],cb);
+                }
+            })
+        }
     }
 
     turnUser(){

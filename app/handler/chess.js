@@ -70,11 +70,6 @@ module.exports = {
 
                     let otherPlayer = room.getOtherPlayer(uid);
 
-                    // let res_p = new ResPackage({
-                    //     handler:'chess',
-                    //     event:'userForceQuit'
-                    // });
-
                     let res_p = {
                         handler:'chess',
                         event:'roomEnd',
