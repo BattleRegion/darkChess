@@ -80,8 +80,10 @@ class Player {
         this.timer = setTimeout(()=>{
             this.timeoutLock = true;
             let r = this.chess.isInRoom(this.uid);
-            Log.roomInfo(r.roomId, `${this.uid} 超时 自动跳过！`);
-            this.userJump(r);
+            if(r){
+                Log.roomInfo(r.roomId, `${this.uid} 超时 自动跳过！`);
+                this.userJump(r);
+            }
         },ActionTime)
     }
 

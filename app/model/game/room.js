@@ -209,13 +209,13 @@ class Room {
                 playerUid = lose.uid;
             }
             let sql = new Command('select elo from rank where id = ?',[playerUid]);
-            Executor.query("local",sql,(e,r)=>{
+            Executor.query(DBEnv,sql,(e,r)=>{
                 if(!e){
                     let sql1 = new Command('update rank set elo = elo + ? where id = ?',[eloOff, playerUid]);
                     if(r.length === 0){
                         sql1 = new Command('insert into rank(id, elo) values(?,?)',[playerUid, basicScore + eloOff]);
                     }
-                    Executor.query('local', sql1, cb)
+                    Executor.query(DBEnv, sql1, cb)
                 }
                 else{
                     cb(e, {})
@@ -227,7 +227,7 @@ class Room {
             let sql1 = new Command('select elo from rank where id = ?',[lose.uid]);
             let sqls = [sql,sql1];
 
-            Executor.transaction("local",sqls,(e,r)=>{
+            Executor.transaction(DBEnv,sqls,(e,r)=>{
                 if(!e){
                     let RA = r[0]&&r[0][0]?r[0][0]['elo']:basicScore; //win
                     let RB = r[1]&&r[1][0]?r[1][0]['elo']:basicScore;//lose
