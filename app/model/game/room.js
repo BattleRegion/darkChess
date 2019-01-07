@@ -208,11 +208,11 @@ class Room {
     }
 
     canTurn(player){
-        if(player === this.p1 && this.curTurn === 0){
+        if(player === this.p1 && this.curTurn === 0 && !player.timeoutLock){
             Log.roomInfo(this.roomId,`当前是p1 ${player.uid} 的行动回合`);
             return true;
         }
-        if(player === this.p2 && this.curTurn === 1){
+        if(player === this.p2 && this.curTurn === 1 && !player.timeoutLock){
             Log.roomInfo(this.roomId,`当前是p2 ${player.uid} 的行动回合`);
             return true;
         }

@@ -17,6 +17,7 @@ class Player {
         this.animEnd = false;
         this.chess = null;
         this.timer = null;
+        this.timeoutLock = false;
     }
 
     playerInfo(){
@@ -70,12 +71,14 @@ class Player {
     }
 
     cleanActionTimeCheck(){
+        this.timeoutLock = false;
         this.timer&&clearTimeout(this.timer);
     }
 
     actionTimeCheck(){
         this.cleanActionTimeCheck();
         this.timer = setTimeout(()=>{
+            this.timeoutLock = true;
             let r = this.chess.isInRoom(this.uid);
             Log.roomInfo(r.roomId, `${this.uid} 超时 自动跳过！`);
             this.userJump(r);
