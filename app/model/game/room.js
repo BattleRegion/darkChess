@@ -178,7 +178,7 @@ class Room {
     roomEnd(cb){
         let winPlayer = this.p1.curHp <= 0? this.p2:this.p1;
         let losePlayer = this.p1.curHp <= 0? this.p1:this.p2;
-        this.calculate_ELO(winPlayer,losePlayer,(e)=>{
+        this.calculate_ELO(winPlayer,losePlayer,this.pc,(e)=>{
             if(e){
                 Log.roomInfo(this.roomId,`roomend caculate elo error ${e.toString()}`);
             }
