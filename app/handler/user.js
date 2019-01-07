@@ -1,7 +1,8 @@
 const DataAccess = require('dataAccess');
 const Executor = DataAccess.executor;
 const CryptoUtil = require('../../util/cryptoUtil');
-
+const Command = DataAccess.command;
+const Exector = DataAccess.executor;
 module.exports = {
 
     bindUser: function(req_p, ws){
@@ -54,6 +55,21 @@ module.exports = {
 
     rank: function(req_p, ws){
         let uid = req_p.rawData.uid;
-
+        let sql = new Command('select * from rank order by rank desc limit 0,10',[]);
+        let sql1 = new Command('select * from rank where id = ?',[uid]);
+        Executor.transaction(DBEnv,[sql,sql1],(e,r)=>{
+            if(e){
+                BaseHandler.commonResponse(req_p, {
+                    code: GameCode.GET_RANK_ERROR,
+                },ws)
+            }
+            else{
+                BaseHandler.commonResponse(req_p, {
+                    code: GameCode.SUCCESS,
+                    rank: r[0],
+                    userRank: r[1][0]
+                },ws)
+            }
+        })
     },
 };
