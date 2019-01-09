@@ -133,6 +133,9 @@ class Player {
     }
 
     userJump(r){
+        r.storeAction('jump',{
+            uid:this.uid,
+        },this.uid);
         //跳过
         let res_p = {
             handler:'chess',
