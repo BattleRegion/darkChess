@@ -227,7 +227,7 @@ module.exports = {
                     for(let i = 0;i<r.length;i++){
                         let act = r[i];
                         if(act['action'] === "flip" || act['action'] === "move" ||
-                            act["action"] === "atk"){
+                            act["action"] === "atk" || act['jump'] === "move"){
                             hasAction = true;break;
                         }
 
