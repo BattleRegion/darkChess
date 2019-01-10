@@ -59,6 +59,7 @@ module.exports = {
         let sql1 = new Command('select * from rank where id = ?',[uid]);
         Executor.transaction(DBEnv,[sql,sql1],(e,r)=>{
             if(e){
+                console.log(e);
                 BaseHandler.commonResponse(req_p, {
                     code: GameCode.GET_RANK_ERROR,
                 },ws)
