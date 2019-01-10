@@ -55,7 +55,7 @@ module.exports = {
 
     rank: function(req_p, ws){
         let uid = req_p.rawData.uid;
-        let sql = new Command('select * from rank order by rank desc limit 0,10',[]);
+        let sql = new Command('select * from rank order by elo desc limit 0,10',[]);
         let sql1 = new Command('select * from rank where id = ?',[uid]);
         Executor.transaction(DBEnv,[sql,sql1],(e,r)=>{
             if(e){
