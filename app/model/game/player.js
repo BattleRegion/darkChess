@@ -3,7 +3,7 @@ const PLAYER_TYPE = require('./playerType');
 const ResPackage = require('../../model/net/resPackage');
 const Request = require('request');
 const BasicHp = 30;
-const ROUNDMAX = 15;
+const ROUNDMAX = 9999999;
 const AUTODESHP = 1;
 const ActionTime = 15 * 1000;
 class Player {
