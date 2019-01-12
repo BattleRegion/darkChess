@@ -5,7 +5,7 @@ const Request = require('request');
 const BasicHp = 30;
 const ROUNDMAX = 15;
 const AUTODESHP = 1;
-const ActionTime = 9999999 * 1000;
+const ActionTime = 15 * 1000;
 class Player {
     constructor(uid, type) {
         this.uid = uid;
@@ -41,7 +41,7 @@ class Player {
         }
 
         if(this.type === PLAYER_TYPE.USER){
-            this.actionTimeCheck();
+            // this.actionTimeCheck();
             let res_p = new ResPackage({
                 handler:"chess",
                 event:"turn",
